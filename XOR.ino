@@ -77,8 +77,8 @@ SAM3X-Arduino Pin Mapping
 
 enum : int
 {
-    min,
-    max
+    _min,
+    _max
 };
 
 struct layer
@@ -320,7 +320,7 @@ void loop()
                     {
                         _midValueADCSum += _X[j] * core._mid[i][j];
                     }
-                    _layer.wsum[i] = 32 * (double(core._ADCvalue[i]) - _midValueADCSum) / (double(core._standard[i][max]) - double(core._standard[i][min]));
+                    _layer.wsum[i] = 32 * (double(core._ADCvalue[i]) - _midValueADCSum) / (double(core._standard[i][_max]) - double(core._standard[i][_min]));
                     _layer.activationValue[i] = 1.0 / (1.0 + exp(-_layer.wsum[i]));
                 }
             };
@@ -535,8 +535,8 @@ void loop()
                 BackPropagation b3      b4     : from Y[2]
             */
 
-            b3 = (32 * (double(core._ADCvalue[3]) - double(Y[2]) * double((core._mid[2][3])))) / (double(core._standard[3][max]) - double(core._standard[3][min])); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
-            b4 = (32 * (double(core._ADCvalue[4]) - double(Y[2]) * double((core._mid[2][4])))) / (double(core._standard[4][max]) - double(core._standard[4][min])); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
+            b3 = (32 * (double(core._ADCvalue[3]) - double(Y[2]) * double((core._mid[2][3])))) / (double(core._standard[3][_max]) - double(core._standard[3][_min])); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
+            b4 = (32 * (double(core._ADCvalue[4]) - double(Y[2]) * double((core._mid[2][4])))) / (double(core._standard[4][_max]) - double(core._standard[4][_min])); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
 
             p[0] = double(b3) * X[3] * (1 - X[3]) / double(amplification_factor);
             p[0] = (error >= 0) ? p[0] : -p[0];
