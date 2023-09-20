@@ -28,9 +28,9 @@ public:
     int _WL[5];
 
     // output
-    std::vector<int> _ADCvalueN5;
-    std::vector<int> _ADCvalueN6;
-    std::vector<int> _ADCvalue;
+    int _ADCvalueN5[5];
+    int _ADCvalueN6[5];
+    int _ADCvalue[5];
     /*---------------------methods----------------*/
 
 public:

@@ -87,8 +87,8 @@ enum : int
 
 struct layer
 {
-    std::vector<double> wsum;
-    std::vector<double> activationValue;
+    double wsum[5];
+    double activationValue[5];
 };
 
 int DFF1, FB, CR, CON, CON2, HL_CHOP;
@@ -99,27 +99,28 @@ synapseArray5by5 core;
 int target;
 double target_real;
 
-std::vector<double> X; // X0, X1, X2, X3, X4
-std::vector<double> Y;
+double X[5]; // X0, X1, X2, X3, X4
+double Y[5];
 int X0_real, X1_real;
-std::vector<int> pulseWidthWL;
+int pulseWidthWL[5];
 
-std::vector<double> p; // p0, p1, p2
-std::vector<double> q; // q0, q1, q2, q3, q4
-std::vector<int> P;
-std::vector<int> Q;
+double p[5]; // p0, p1, p2
+double q[5]; // q0, q1, q2, q3, q4
+int P[5];
+int Q[5];
+int result[5];
 
 double error, loss;
 double learning_rate_partial;
 double b3, b4;
 
 // Export
-std::vector<std::pair<double, int>> ErrorEpochRecorder;
+double ErrorEpochRecorder[100];
 
 // FORWARD DECLARATION ************************************
 
 void state_switch(int state);
-std::vector<int> read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4);
+void read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4, int *result);
 void Potentiation(int *N1_0, int *N1_1, int *N1_2, int *N1_3, int *N1_4, int *N2_0, int *N2_1, int *N2_2, int *N2_3, int *N2_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time);
 void Depression(int *N3_0, int *N3_1, int *N3_2, int *N3_3, int *N3_4, int *N4_0, int *N4_1, int *N4_2, int *N4_3, int *N4_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time);
 
@@ -226,7 +227,7 @@ void loop()
         for (int i = 0; i < epoch; i++)
         {
             Serial.print("epoch = ");
-            Serial.println(i + 1);
+            Serial.print(i + 1);
 
             // XOR Problem Scheme
             /* Feed-Forward 1
@@ -264,80 +265,6 @@ void loop()
                                                 Value[0]
             */
 
-            // X and pulseWidth should be vectors with size of 5. They correspond to the input value.
-            /*
-            auto Feedforward = [](std::vector<double> &arg_X, std::vector<int> &arg_pulseWidthWL, synapseArray5by5 arg_core)
-            {
-                std::vector<int> WL;
-
-                for (int i = 0; i < 5; i++)
-                {
-                    WL[i] = round(arg_X[i] * arg_pulseWidthWL[i]);
-                }
-
-                arg_core.setWLPulseWidth(WL[0], WL[1], WL[2], WL[3], WL[4]);
-
-                state_switch(3);
-                int N3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
-                PIOC->PIO_SODR = N3; // N3 SET
-                delayMicroseconds(read_set_time);
-                arg_core._ADCvalueN5 = read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4]);
-                PIOC->PIO_CODR = N3; // N3 clear
-
-                state_switch(5);
-                int N1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
-                PIOC->PIO_SODR = N1; // N1 SET
-                delayMicroseconds(read_set_time);
-                arg_core._ADCvalueN6 = read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4]);
-                PIOC->PIO_CODR = N1; // N1 clear
-
-                arg_core.setADCvalue();
-            };
-
-            auto Backpropagation = [](std::vector<double> &arg_X, std::vector<int> &arg_pulseWidthWL, synapseArray5by5 &arg_core)
-            {
-                std::vector<int> WL;
-
-                for (int i = 0; i < 5; i++)
-                {
-                    WL[i] = round(arg_X[i] * arg_pulseWidthWL[i]);
-                }
-
-                arg_core.setWLPulseWidth(WL[0], WL[1], WL[2], WL[3], WL[4]);
-
-                state_switch(4);
-                int N3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
-                PIOC->PIO_SODR = N3; // N3 SET
-                delayMicroseconds(read_set_time);
-                arg_core._ADCvalueN5 = read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4]);
-                PIOC->PIO_CODR = N3; // N3 Clear
-
-                state_switch(6);
-                int N1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
-                PIOC->PIO_SODR = N1; // N1 SET
-                delayMicroseconds(read_set_time);
-                arg_core._ADCvalueN6 = read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4]);
-                PIOC->PIO_CODR = N1; // N1 Clear
-
-                // Calculate ADC N5 value - ADC N6 value and save to ADC value in the core
-                arg_core.setADCvalue();
-            };
-
-            auto calculateLayerValues = [](std::vector<double> &arg_X, synapseArray5by5 &arg_core, layer &arg_layer)
-            {
-                for (int i = 0; i < 5; i++)
-                {
-                    double var_midValueADCSum = 0.0;
-                    for (int j = 0; j < 5; j++)
-                    {
-                        var_midValueADCSum += arg_X[j] * core._mid[i][j];
-                    }
-                    arg_layer.wsum[i] = 32 * (double(core._ADCvalue[i]) - var_midValueADCSum) / (double(core._standard[i][max_val]) - double(core._standard[i][min_val]));
-                    arg_layer.activationValue[i] = 1.0 / (1.0 + exp(arg_layer.wsum[i]));
-                }
-            };
-            */
-
             // Feed-Forward 1 : Visible -> Hidden Layer ----------------------------
             X[0] = rand() % 2;
             X[1] = rand() % 2;
@@ -345,7 +272,10 @@ void loop()
             X[3] = 0;
             X[4] = 0;
 
-            pulseWidthWL = {6200, 6200, 6200, 6200, 6200};
+            for (int i = 0; i < 5; i++)
+            {
+                pulseWidthWL[i] = 6200;
+            }
 
             X0_real = (X[0] == 0) ? 0 : 1; // WL0 = round(6200 * X0_real);
             X1_real = (X[1] == 0) ? 0 : 1; // WL1 = round(6200 * X1_real);
@@ -369,7 +299,10 @@ void loop()
             X[3] = hiddenLayer.activationValue[0];
             X[4] = hiddenLayer.activationValue[1];
 
-            pulseWidthWL = {6200, 6200, 6200, 6200, 6200};
+            for (int i = 0; i < 5; i++)
+            {
+                pulseWidthWL[i] = 6200;
+            }
 
             // N1, N3 line pulse occurence probability
             q[3] = X[3];
@@ -409,10 +342,11 @@ void loop()
             // Calculate error
             error = outputLayer.activationValue[0] - target_real; // (y-t) value
             double Error = 0.5 * error * error;
+            Serial.print(" : ");
             Serial.print("error  = ");
             Serial.println(Error);
             // loss = 100 * error * error;
-            ErrorEpochRecorder.push_back(std::make_pair(Error, epoch));
+            ErrorEpochRecorder[epoch] = Error;
 
             // Multiply amplification_factor for the value to be inside ADC(0~1023 10bit) range
             double BP_outputLayer = error * (outputLayer.activationValue[0]) * (1 - outputLayer.activationValue[0]) * amplification_factor;
@@ -424,71 +358,16 @@ void loop()
             Y[3] = 0;
             Y[4] = 0;
 
-            pulseWidthWL = {6200, 6200, 6200, 6200, 6200};
+            for (int i = 0; i < 5; i++)
+            {
+                pulseWidthWL[i] = 6200;
+            }
 
             Backpropagation(Y, pulseWidthWL, core);
             layer hiddenLayerBackProp;
             calculateLayerValues(Y, core, hiddenLayerBackProp);
 
             // Weight Update 1 : Output -> Hidden Layer ----------------------------
-            /*
-            auto SGDsetRegisterPotentiation = [&]()
-            {
-                for (int i = 0; i < Bit_length; i++)
-                {
-                    for (int j = 0; j < 5; j++)
-                    {
-                        if (abs(Q[j]) == 0)
-                        {
-                            N1[j][i] = 0;
-                        }
-                        else
-                        {
-                            N1[j][i] = ((rand() % 100000) + 1 <= Q[j]) ? 1 : 0; // j = 2, 3, 4 only
-                        }
-
-                        if (abs(P[j]) == 0)
-                        {
-                            N2[j][i] = 0;
-                        }
-                        else
-                        {
-                            N2[j][i] = ((rand() % 100000) + 1 <= P[j]) ? 1 : 0; // j = 2 only
-                        }
-                    }
-                }
-                Potentiation(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
-            };
-
-            auto SGDsetRegisterDepression = [&]()
-            {
-                for (int i = 0; i < Bit_length; i++)
-                {
-                    for (int j = 0; j < 5; j++)
-                    {
-                        if (abs(Q[j]) == 0)
-                        {
-                            N3[j][i] = 0;
-                        }
-                        else
-                        {
-                            N3[j][i] = ((rand() % 100000) + 1 <= Q[j]) ? 1 : 0; // j = 2, 3, 4 only
-                        }
-
-                        if (abs(P[j]) == 0)
-                        {
-                            N4[j][i] = 0;
-                        }
-                        else
-                        {
-                            N4[j][i] = ((rand() % 100000) + 1 <= P[j]) ? 1 : 0; // j = 2 only
-                        }
-                    }
-                }
-                Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
-            };
-            */
-
             /* Weight Update
 
                     Q[0] --
@@ -524,11 +403,11 @@ void loop()
 
             if (P[2] < 0)
             {
-                SGDsetRegisterPotentiation();
+                SGDsetRegisterPotentiation(pulseWidth, preEnableTime, postEnableTime, zeroTime);
             }
             else
             {
-                SGDsetRegisterDepression();
+                SGDsetRegisterDepression(pulseWidth, preEnableTime, postEnableTime, zeroTime);
             }
 
             // Weight Update 2 : Hidden -> Visible Layer -----------------------------
@@ -573,9 +452,6 @@ void loop()
 
             // Why is there (-) on P[0] or P[1] on N2 - Potentiation and N4 - Depression
 
-            // SGDsetRegisterPotentiation();
-            // SGDsetRegisterDepression();
-
             for (int i = 0; i < Bit_length; i++)
             {
                 for (int j = 0; j < 5; j++)
@@ -600,6 +476,8 @@ void loop()
         }
     }
 }
+
+/*---------------------METHODS----------------*/
 
 void state_switch(int state)
 {                   // Read 동작시에 CR핀 set할것, 조금씩 누적되는 경우 발생!
@@ -644,7 +522,7 @@ void state_switch(int state)
     }
 }
 
-std::vector<int> read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4)
+void read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4, int *result)
 {
     int d1 = 1;
     int d2 = 1 << 1;
@@ -655,7 +533,6 @@ std::vector<int> read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4)
     int c = d1 | d2 | d3 | d4 | d5;
     int set[MAX];
     int WL_0[MAX], WL_1[MAX], WL_2[MAX], WL_3[MAX], WL_4[MAX];
-    std::vector<int> result; // 함수 안에서의 반환을 할 구조체를 따로 정의하는 과정
 
     for (int i = 0; i < MAX; i++)
     {
@@ -719,22 +596,12 @@ std::vector<int> read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4)
     ADC_3 = ADC->ADC_CDR[4];  // read data on A3
     ADC_4 = ADC->ADC_CDR[3];  // read data on A4
     PIOB->PIO_CODR = 1 << 21; // CR
-    // Serial.print(", ADC0 Value =");
-    // Serial.print(ADC_0 / 4 );
-    // Serial.print(", ADC1 Value =");
-    // Serial.print(ADC_1 / 4);
-    // Serial.print(", ADC2 Value =");
-    // Serial.print(ADC_2 / 4);
-    // Serial.print(", ADC3 Value =");
-    // Serial.print(ADC_3 / 4);
-    // Serial.print(", ADC4 Value =");
-    // Serial.print(ADC_4 / 4);
-    result[0] = ADC_0 / 4;
-    result[1] = ADC_1 / 4;
-    result[2] = ADC_2 / 4;
-    result[3] = ADC_3 / 4;
-    result[4] = ADC_4 / 4;
-    return result;
+
+    result[0] = ADC_0 / 4; // ADC0 value
+    result[1] = ADC_1 / 4; // ADC1 value
+    result[2] = ADC_2 / 4; // ADC2 value
+    result[3] = ADC_3 / 4; // ADC3 value
+    result[4] = ADC_4 / 4; // ADC4 value
 }
 
 void Potentiation(int *N1_0, int *N1_1, int *N1_2, int *N1_3, int *N1_4, int *N2_0, int *N2_1, int *N2_2, int *N2_3, int *N2_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time)
@@ -885,9 +752,9 @@ void Depression(int *N3_0, int *N3_1, int *N3_2, int *N3_3, int *N3_4, int *N4_0
     }
 }
 
-void Feedforward(std::vector<double> &arg_X, std::vector<int> &arg_pulseWidthWL, synapseArray5by5 arg_core)
+void Feedforward(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core)
 {
-    std::vector<int> WL;
+    int WL[5];
 
     for (int i = 0; i < 5; i++)
     {
@@ -900,22 +767,22 @@ void Feedforward(std::vector<double> &arg_X, std::vector<int> &arg_pulseWidthWL,
     int N3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
     PIOC->PIO_SODR = N3; // N3 SET
     delayMicroseconds(read_set_time);
-    arg_core._ADCvalueN5 = read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4]);
+    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
     PIOC->PIO_CODR = N3; // N3 clear
 
     state_switch(5);
     int N1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
     PIOC->PIO_SODR = N1; // N1 SET
     delayMicroseconds(read_set_time);
-    arg_core._ADCvalueN6 = read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4]);
+    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN6);
     PIOC->PIO_CODR = N1; // N1 clear
 
-    arg_core.setADCvalue();
+    core.setADCvalue();
 };
 
-void Backpropagation(std::vector<double> &arg_X, std::vector<int> &arg_pulseWidthWL, synapseArray5by5 &arg_core)
+void Backpropagation(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core)
 {
-    std::vector<int> WL;
+    int WL[5];
 
     for (int i = 0; i < 5; i++)
     {
@@ -928,21 +795,21 @@ void Backpropagation(std::vector<double> &arg_X, std::vector<int> &arg_pulseWidt
     int N3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
     PIOC->PIO_SODR = N3; // N3 SET
     delayMicroseconds(read_set_time);
-    arg_core._ADCvalueN5 = read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4]);
+    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
     PIOC->PIO_CODR = N3; // N3 Clear
 
     state_switch(6);
     int N1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
     PIOC->PIO_SODR = N1; // N1 SET
     delayMicroseconds(read_set_time);
-    arg_core._ADCvalueN6 = read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4]);
+    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN6);
     PIOC->PIO_CODR = N1; // N1 Clear
 
     // Calculate ADC N5 value - ADC N6 value and save to ADC value in the core
     arg_core.setADCvalue();
 };
 
-void calculateLayerValues(std::vector<double> &arg_X, synapseArray5by5 &arg_core, layer &arg_layer)
+void calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core, layer &arg_layer)
 {
     for (int i = 0; i < 5; i++)
     {
@@ -956,7 +823,7 @@ void calculateLayerValues(std::vector<double> &arg_X, synapseArray5by5 &arg_core
     }
 };
 
-void SGDsetRegisterPotentiation()
+void SGDsetRegisterPotentiation(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
 {
     for (int i = 0; i < Bit_length; i++)
     {
@@ -984,7 +851,7 @@ void SGDsetRegisterPotentiation()
     Potentiation(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 };
 
-void SGDsetRegisterDepression()
+void SGDsetRegisterDepression(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
 {
     for (int i = 0; i < Bit_length; i++)
     {
