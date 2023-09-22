@@ -78,6 +78,8 @@ SAM3X-Arduino Pin Mapping
 #define VAR_NUM 10       // 총 Input variable 수를 정의할 것
 #define learning_rate 30 // 1st layer의 learning rate 정의
 #define amplification_factor 8
+#define DECISION_BOUNDARY 0
+#define PRINTER(name) printer(#name, (name))
 
 enum : int
 {
@@ -123,6 +125,11 @@ void state_switch(int state);
 void read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4, int *result);
 void Potentiation(int *N1_0, int *N1_1, int *N1_2, int *N1_3, int *N1_4, int *N2_0, int *N2_1, int *N2_2, int *N2_3, int *N2_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time);
 void Depression(int *N3_0, int *N3_1, int *N3_2, int *N3_3, int *N3_4, int *N4_0, int *N4_1, int *N4_2, int *N4_3, int *N4_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time);
+void Feedforward(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core);
+void Backpropagation(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core);
+void calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core, layer &arg_layer);
+void SGDsetRegisterPotentiation(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime);
+void SGDsetRegisterDepression(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime);
 
 // SETUP **************************************************
 void setup()
@@ -226,8 +233,9 @@ void loop()
         // EPOCH ---------------------------------------------------------
         for (int i = 0; i < epoch; i++)
         {
+            Serial.println("// ---------------------------------------------------------");
             Serial.print("epoch = ");
-            Serial.print(i + 1);
+            Serial.println(i + 1);
 
             // XOR Problem Scheme
             /* Feed-Forward 1
@@ -265,6 +273,10 @@ void loop()
                                                 Value[0]
             */
 
+            // XOR Problem Scheme
+            layer hiddenLayer;
+            layer outputLayer;
+
             // Feed-Forward 1 : Visible -> Hidden Layer ----------------------------
             X[0] = rand() % 2;
             X[1] = rand() % 2;
@@ -289,7 +301,6 @@ void loop()
             q[2] = X[2];
 
             Feedforward(X, pulseWidthWL, core);
-            layer hiddenLayer;
             calculateLayerValues(X, core, hiddenLayer);
 
             // Feed-Forward 2 : Hidden -> Output Layer ----------------------------
@@ -298,6 +309,9 @@ void loop()
             X[2] = 1;
             X[3] = hiddenLayer.activationValue[0];
             X[4] = hiddenLayer.activationValue[1];
+
+            PRINTER(X[3]);
+            PRINTER(X[4]);
 
             for (int i = 0; i < 5; i++)
             {
@@ -309,7 +323,6 @@ void loop()
             q[4] = X[4];
 
             Feedforward(X, pulseWidthWL, core);
-            layer outputLayer;
             calculateLayerValues(X, core, outputLayer);
 
             // Back Propagation 1--------------------------------------------------
@@ -342,15 +355,13 @@ void loop()
             // Calculate error
             error = outputLayer.activationValue[0] - target_real; // (y-t) value
             double Error = 0.5 * error * error;
-            Serial.print(" : ");
-            Serial.print("error  = ");
-            Serial.println(Error);
-            // loss = 100 * error * error;
-            ErrorEpochRecorder[epoch] = Error;
+            loss = 100 * error * error;
+            Serial.print("loss  = ");
+            Serial.println(loss);
+            ErrorEpochRecorder[epoch] = loss;
 
             // Multiply amplification_factor for the value to be inside ADC(0~1023 10bit) range
             double BP_outputLayer = error * (outputLayer.activationValue[0]) * (1 - outputLayer.activationValue[0]) * amplification_factor;
-
             // 앞서 정의된 BP_outputLayer의 값에서 소자의 값을 반영한 특정값을 곱해준 만큼 역전(backpropagation)을 시켜줌(특정값은 feedforward 과정에서 곱해준 일정한 상수와 일치를 시켜주어야 한다)
             Y[0] = 0;
             Y[1] = 0;
@@ -476,7 +487,7 @@ void loop()
         }
     }
 }
-
+//**************************************************************************************************************//
 /*---------------------METHODS----------------*/
 
 void state_switch(int state)
@@ -811,15 +822,20 @@ void Backpropagation(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg
 
 void calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core, layer &arg_layer)
 {
+    double var_midValueADCSum;
     for (int i = 0; i < 5; i++)
     {
-        double var_midValueADCSum = 0.0;
+        var_midValueADCSum = 0.0;
         for (int j = 0; j < 5; j++)
         {
             var_midValueADCSum += arg_X[j] * core._mid[i][j];
         }
-        arg_layer.wsum[i] = 32 * (double(core._ADCvalue[i]) - var_midValueADCSum) / (double(core._standard[i][max_val]) - double(core._standard[i][min_val]));
+
+        arg_layer.wsum[i] = 32 * (double(arg_core._ADCvalue[i]) - var_midValueADCSum) / (double(arg_core._standard[i][max_val]) - double(arg_core._standard[i][min_val]));
+
+        // Activation Function - Sigmoid Function
         arg_layer.activationValue[i] = 1.0 / (1.0 + exp(arg_layer.wsum[i]));
+        arg_layer.activationValue[i] = (arg_layer.activationValue[i] > DECISION_BOUNDARY) ? 1 : 0;
     }
 };
 
@@ -878,3 +894,12 @@ void SGDsetRegisterDepression(int pulseWidth, int preEnableTime, int postEnableT
     }
     Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 };
+
+void printer(char *name, double value)
+{
+    Serial.print("name: ");
+    Serial.print(name);
+    Serial.print(" value: ");
+    Serial.print(value);
+    Serial.println("");
+}
