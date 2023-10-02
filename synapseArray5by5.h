@@ -31,6 +31,12 @@ public:
     int _ADCvalueN5[5];
     int _ADCvalueN6[5];
     int _ADCvalue[5];
+
+    // (SGD) Stochastic Gradient Descent
+    int p[5];
+    int q[5];
+    int P[5];
+    int Q[5];
     /*---------------------methods----------------*/
 
 public:

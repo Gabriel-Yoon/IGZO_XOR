@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <math.h>
+#include <cmath>
 #undef min
 #undef max
 #include <vector>
@@ -230,6 +231,11 @@ void loop()
         int zeroTime = zero_time_string.toInt();
         int epoch = epoch_string.toInt();
 
+        // XOR Problem Scheme
+        layer inputLayer;
+        layer hiddenLayer;
+        layer outputLayer;
+
         // EPOCH ---------------------------------------------------------
         for (int i = 0; i < epoch; i++)
         {
@@ -261,7 +267,7 @@ void loop()
 
                          WL1--
 
-            b2        => WL2--                  (2,2)
+            b2 (bias) => WL2--                  (2,2)
             hiddenLayer
             Value[0]  => WL3--                  (2,3)                   q3
             hiddenLayer
@@ -272,10 +278,6 @@ void loop()
                                                 outputLayer
                                                 Value[0]
             */
-
-            // XOR Problem Scheme
-            layer hiddenLayer;
-            layer outputLayer;
 
             // Feed-Forward 1 : Visible -> Hidden Layer ----------------------------
             X[0] = rand() % 2;
@@ -301,14 +303,15 @@ void loop()
             q[2] = X[2];
 
             Feedforward(X, pulseWidthWL, core);
-            calculateLayerValues(X, core, hiddenLayer);
+            hiddenLayer = calculateLayerValues(X, core);
+            // calculateLayerValues(X, core, hiddenLayer);
 
             // Feed-Forward 2 : Hidden -> Output Layer ----------------------------
             X[0] = 0;
             X[1] = 0;
             X[2] = 1;
-            X[3] = hiddenLayer.activationValue[0];
-            X[4] = hiddenLayer.activationValue[1];
+            X[3] = hiddenLayer.activationValue[0]; // h0
+            X[4] = hiddenLayer.activationValue[1]; // h1
 
             PRINTER(X[3]);
             PRINTER(X[4]);
@@ -352,6 +355,12 @@ void loop()
                     = error             * output * (1-output)   * last_value of sigmoid output
             */
 
+            // BackPropagation: Hidden Layer
+            // Y_hat = outputLayer.activationValue[0]
+            // Y = target_real
+
+            // BackPropagation: Input Layer
+
             // Calculate error
             error = outputLayer.activationValue[0] - target_real; // (y-t) value
             double Error = 0.5 * error * error;
@@ -376,7 +385,8 @@ void loop()
 
             Backpropagation(Y, pulseWidthWL, core);
             layer hiddenLayerBackProp;
-            calculateLayerValues(Y, core, hiddenLayerBackProp);
+            hiddenLayerBackProp = calculateLayerValues(Y, core);
+            // calculateLayerValues(Y, core, hiddenLayerBackProp);
 
             // Weight Update 1 : Output -> Hidden Layer ----------------------------
             /* Weight Update
@@ -676,7 +686,7 @@ void Potentiation(int *N1_0, int *N1_1, int *N1_2, int *N1_3, int *N1_4, int *N2
     for (int i = 0; i < Bit_length; i++)
     {
         PIOC->PIO_CODR = n1_clear; // N1 clear
-        PIOC->PIO_CODR = n2_clear; //// N2 clear
+        PIOC->PIO_CODR = n2_clear; // N2 clear
         delayMicroseconds(zero_time);
         PIOC->PIO_SODR = set[i]; // N1 set
         delayMicroseconds(pre_enable_time);
@@ -834,10 +844,48 @@ void calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core, layer &arg_
         arg_layer.wsum[i] = 32 * (double(arg_core._ADCvalue[i]) - var_midValueADCSum) / (double(arg_core._standard[i][max_val]) - double(arg_core._standard[i][min_val]));
 
         // Activation Function - Sigmoid Function
-        arg_layer.activationValue[i] = 1.0 / (1.0 + exp(arg_layer.wsum[i]));
+        arg_layer.activationValue[i] = sigmoidActivFunc(arg_layer.wsum[i]);
         arg_layer.activationValue[i] = (arg_layer.activationValue[i] > DECISION_BOUNDARY) ? 1 : 0;
     }
 };
+
+layer calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core)
+{
+    layer arg_layer;
+    double var_midValueADCSum;
+    for (int i = 0; i < 5; i++)
+    {
+        var_midValueADCSum = 0.0;
+        for (int j = 0; j < 5; j++)
+        {
+            var_midValueADCSum += arg_X[j] * core._mid[i][j];
+        }
+
+        arg_layer.wsum[i] = 32 * (double(arg_core._ADCvalue[i]) - var_midValueADCSum) / (double(arg_core._standard[i][max_val]) - double(arg_core._standard[i][min_val]));
+
+        // Activation Function - Sigmoid Function
+        arg_layer.activationValue[i] = sigmoidActivFunc(arg_layer.wsum[i]);
+        arg_layer.activationValue[i] = (arg_layer.activationValue[i] > DECISION_BOUNDARY) ? 1 : 0;
+    }
+    return arg_layer;
+}
+
+double sigmoidActivFunc(double &x)
+{
+    return 1.0 / (1.0 + std::exp(x));
+}
+
+double tanhActivFunc(double &x)
+{
+    double ex = std::exp(x);
+    double enx = std::exp(-x);
+    return (ex - enx) / (ex + enx);
+}
+
+double BinaryCrossentropy(double &y_hat, double &y)
+{
+    return -y * log(y_hat) + (1 - y) * log(1 - y_hat);
+}
 
 void SGDsetRegisterPotentiation(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
 {
