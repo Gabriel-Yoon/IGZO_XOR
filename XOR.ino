@@ -250,11 +250,11 @@ void loop()
 
                     X1=> WL1--  **     **
 
-                    X2=> WL2--  **     **
+                    X2=> WL2--  **     **       ##
 
-                         WL3--
+                         WL3--                  ##
 
-                         WL4--
+                         WL4--                  ##
 
                                 |      |       |       |       |
                                 adc0    adc1    adc2    adc3    adc4
@@ -798,7 +798,11 @@ void Feedforward(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_cor
     read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN6);
     PIOC->PIO_CODR = N1; // N1 clear
 
-    core.setADCvalue();
+    arg_core.setADCvalue();
+    for (int i = 0; i < 5; i++)
+    {
+        PRINTER(arg_core._ADCvalue[i]);
+    }
 };
 
 void Backpropagation(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core)
@@ -828,6 +832,10 @@ void Backpropagation(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg
 
     // Calculate ADC N5 value - ADC N6 value and save to ADC value in the core
     arg_core.setADCvalue();
+    // for (int i = 0; i < 5; i++)
+    // {
+    //     PRINTER(arg_core._ADCvalue[i]);
+    // }
 };
 
 void calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core, layer &arg_layer)
