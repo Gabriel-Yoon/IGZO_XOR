@@ -877,14 +877,14 @@ layer calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core)
 
         // Activation Function - Sigmoid Function
         arg_layer.activationValue[i] = sigmoidActivFunc(arg_layer.wsum[i]);
-        arg_layer.activationValue[i] = (arg_layer.activationValue[i] > DECISION_BOUNDARY) ? 1 : 0;
+        // arg_layer.activationValue[i] = (arg_layer.activationValue[i] > DECISION_BOUNDARY) ? 1 : 0;
     }
     return arg_layer;
 }
 
 double sigmoidActivFunc(double &x)
 {
-    return 1.0 / (1.0 + std::exp(x));
+    return 1.0 / (1.0 + std::exp(-x));
 }
 
 double tanhActivFunc(double &x)
