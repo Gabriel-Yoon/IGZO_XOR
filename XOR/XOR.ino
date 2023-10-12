@@ -1,10 +1,15 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <math.h>
+#include <cmath>
+#undef min
+#undef max
+#include <vector>
+// #include <Vector.h>
+#include "synapseArray5by5.h"
 
-#include "ADC_matrix.h"
-#include "synapse_array_5by5.h"
-
+#undef max
+#undef min
 /*
 
 SAM3X-Arduino Pin Mapping
@@ -68,33 +73,64 @@ SAM3X-Arduino Pin Mapping
 
 // FIELDS *********************************************
 
-#define MAX 300
-#define BitLength 10
+#define MAX 120          // Read pulse set까지의 시간을 위하여
+#define Bit_length 10    // update할 때의 timing을 맞추기 위해서 따로 정의
+#define read_set_time 1  // [ms]
+#define VAR_NUM 10       // 총 Input variable 수를 정의할 것
+#define learning_rate 30 // 1st layer의 learning rate 정의
+#define amplification_factor 8
+#define DECISION_BOUNDARY 0
+#define PRINTER(name) printer(#name, (name))
 
 enum : int
 {
-    min,
-    max
+    min_val,
+    max_val
 };
 
-int WL0, WL1, WL2, WL3, WL4, X0, X1, target, P0, P1, P2, Q0, Q1, Q2, Q3, Q4; // input data를 의미하는 값, P1, Q1은 정수값으로 정의하면서 실제 rand와 대소비교를 하기 위한 역할
-int ADC_h1_N5, ADC_h1_N6, ADC_h1_N56, ADC_h2_N5, ADC_h2_N6, ADC_h2_N56, ADC_o1_N5, ADC_o1_N6, ADC_o1_N56, ADC_b3_N5, ADC_b4_N5, ADC_b3_N6, ADC_b4_N6, ADC_b3_N56, ADC_b4_N56;
+struct layer
+{
+    double wsum[5];
+    double activationValue[5];
+};
 
 int DFF1, FB, CR, CON, CON2, HL_CHOP;
-int ADC_mid[5][5];
-int ADC_std[5][2]; // min, max
+int N1[5][Bit_length], N2[5][Bit_length], N3[5][Bit_length], N4[5][Bit_length], N5[5][Bit_length];
 
-float X0_real, X1_real, target_real, error, p0, p1, p2, loss, q0, q1, q2, q3, q4, X2, X3, X4, Activation_input_h1, Activation_input_h2, Activation_output_h1, Activation_output_h2, Activation_input_o1, Activation_output_o1, Output_b1, Output_b1_plus, b3, b4, learning_rate_partial;
-int N1[5][BitLength], N2[5][BitLength], N3[5][BitLength], N4[5][BitLength], N5[5][BitLength];
+synapseArray5by5 core;
 
-struct ADC_matrix
-{
-    int adc0;
-    int adc1;
-    int adc2;
-    int adc3;
-    int adc4;
-};
+int target;
+double target_real;
+
+double X[5]; // X0, X1, X2, X3, X4
+double Y[5];
+int X0_real, X1_real;
+int pulseWidthWL[5];
+
+double p[5]; // p0, p1, p2
+double q[5]; // q0, q1, q2, q3, q4
+int P[5];
+int Q[5];
+int result[5];
+
+double error, loss;
+double learning_rate_partial;
+double b3, b4;
+
+// Export
+double ErrorEpochRecorder[100];
+
+// FORWARD DECLARATION ************************************
+
+void state_switch(int state);
+void read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4, int *result);
+void Potentiation(int *N1_0, int *N1_1, int *N1_2, int *N1_3, int *N1_4, int *N2_0, int *N2_1, int *N2_2, int *N2_3, int *N2_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time);
+void Depression(int *N3_0, int *N3_1, int *N3_2, int *N3_3, int *N3_4, int *N4_0, int *N4_1, int *N4_2, int *N4_3, int *N4_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time);
+void Feedforward(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core);
+void Backpropagation(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core);
+void calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core, layer &arg_layer);
+void SGDsetRegisterPotentiation(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime);
+void SGDsetRegisterDepression(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime);
 
 // SETUP **************************************************
 void setup()
@@ -142,15 +178,28 @@ void setup()
 // LOOP **************************************************
 void loop()
 {
-    String _D0, _D1, _D2, _D3, _D4, _pulseWidth, _preEnableTime, _postEnableTime, _zeroTime, _epoch;
+    String D0_string, D1_string, D2_string, D3_string, D4_string, pulse_width_string, pre_enable_string, post_enable_string, zero_time_string, epoch_string;
     String Input_string;
 
-    initialize();
+    int index[VAR_NUM] = {
+        0,
+    }; // set every elements to zero
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < Bit_length; j++)
+        {
+            N1[i][Bit_length] = 0;
+            N2[i][Bit_length] = 0;
+            N3[i][Bit_length] = 0;
+            N4[i][Bit_length] = 0;
+            N5[i][Bit_length] = 0;
+        }
+    }
 
     if (Serial.available() > 0)
     {
         // SERIAL INPUT --------------------------------------------------
-        // read and save "," position into index[]
         Input_string = Serial.readString();
         index[0] = Input_string.indexOf(",");
         for (int i = 0; i < VAR_NUM - 1; i++)
@@ -158,302 +207,298 @@ void loop()
             index[i + 1] = Input_string.indexOf(",", index[i] + 1);
         }
 
-        // parse String input
-        _D0 = Input_string.substring(0, index[0]);
-        _D1 = Input_string.substring(index[0] + 1, index[1]);
-        _D2 = Input_string.substring(index[1] + 1, index[2]);
-        _D3 = Input_string.substring(index[2] + 1, index[3]);
-        _D4 = Input_string.substring(index[3] + 1, index[4]);
+        D0_string = Input_string.substring(0, index[0]);
+        D1_string = Input_string.substring(index[0] + 1, index[1]);
+        D2_string = Input_string.substring(index[1] + 1, index[2]);
+        D3_string = Input_string.substring(index[2] + 1, index[3]);
+        D4_string = Input_string.substring(index[3] + 1, index[4]);
 
-        _pulseWidth = Input_string.substring(index[4] + 1, index[5]);
-        _preEnableTime = Input_string.substring(index[5] + 1, index[6]);
-        _postEnableTime = Input_string.substring(index[6] + 1, index[7]);
-        _zeroTime = Input_string.substring(index[7] + 1, index[8]);
-        _epoch = Input_string.substring(index[8] + 1, index[9]);
+        pulse_width_string = Input_string.substring(index[4] + 1, index[5]); // micro
+        pre_enable_string = Input_string.substring(index[5] + 1, index[6]);  // micro
+        post_enable_string = Input_string.substring(index[6] + 1, index[7]); // micro
+        zero_time_string = Input_string.substring(index[7] + 1, index[8]);   // micro
+        epoch_string = Input_string.substring(index[8] + 1, index[9]);
 
-        int D0 = _D0.toInt();
-        int D1 = _D1.toInt();
-        int D2 = _D2.toInt();
-        int D3 = _D3.toInt();
-        int D4 = _D4.toInt();
+        int D0 = D0_string.toInt();
+        int D1 = D1_string.toInt();
+        int D2 = D2_string.toInt();
+        int D3 = D3_string.toInt();
+        int D4 = D4_string.toInt();
 
-        int pulseWidth = _pulseWidth.toInt();
-        int preEnableTime = _preEnableTime.toInt();
-        int postEnableTime = _postEnableTime.toInt();
-        int zeroTime = _zeroTime.toInt();
-        int epoch = _epoch.toInt(); // 여기서부터 epoch 수를 지정해서 for문을 돌려야 할 것으로 보임
+        int pulseWidth = pulse_width_string.toInt();
+        int preEnableTime = pre_enable_string.toInt();
+        int postEnableTime = post_enable_string.toInt();
+        int zeroTime = zero_time_string.toInt();
+        int epoch = epoch_string.toInt();
 
-        // get arguments and return
-        auto getActivationOutput = [&](auto N5_adc0, auto N6_adc0, auto _queue2, auto _queue3)
-        {
-            Activation_input_h1 = (32 * (double(feedforward1_N5.adc0 - feedforward1_N6.adc0) - double(X0 * ADC_mid[0][0]) - double(X1 * ADC_mid[0][1]) - double(X2 * ADC_mid[0][2]))) / (double(ADC_standard_max1) - double(ADC_standard_min1)); // activation function의 input으로 들어가는 부분
-            Activation_input_h2 = (32 * (double(feedforward1_N5.adc1 - feedforward1_N6.adc1) - double(X0 * ADC_mid10) - double(X1 * ADC_mid11) - double(X2 * ADC_mid12))) / (double(ADC_standard_max2) - double(ADC_standard_min2));             // activation function의 input으로 들어가는 부분
-            Activation_output_h1 = 1.0 / (1.0 + exp(-Activation_input_h1));
-            Activation_output_h2 = 1.0 / (1.0 + exp(-Activation_input_h2));
+        // XOR Problem Scheme
+        layer inputLayer;
+        layer hiddenLayer;
+        layer outputLayer;
 
-            // double minVal = std::numeric_limits<double>::max();
-            // for (int i = size - 1; i >= 0; i--)
-            // {
-            //     if (time[i] != -1 && time[i] < minVal)
-            //     {
-            //         minVal = time[i];
-            //         case_id = i;
-            //         // if(time[i] == 0 || time[i] == 0.0000001 || time[i] <-100){
-            //         //     std::cout << "wrong case_id = " << i << std::endl;
-            //         // }
-            //     }
-            // }
-            // return minVal;
-        };
-
-        // EPOCH --------------------------------------------------
+        // EPOCH ---------------------------------------------------------
         for (int i = 0; i < epoch; i++)
         {
+            Serial.println("// ---------------------------------------------------------");
+            Serial.print("epoch = ");
+            Serial.println(i + 1);
 
-            // Feed-Forward 1--------------------------------------------------
-            // Pre-set Feed-Forward 1
-            // What is D0 ?
-            if (D0 = 10)
-            {
-                X0 = rand() % 2;
-                X1 = rand{} % 2;
-                X2 = 1;
-                X0_real = (X0 == 0) ? 0 : 1;
-                X1_real = (X1 == 0) ? 0 : 1;
+            // XOR Problem Scheme
+            /* Feed-Forward 1
 
-                WL0 = round(6200 * X0_real);
-                WL1 = round(6200 * X1_real);
-                WL2 = 6200 * 1;
-                WL3 = 0;
-                WL4 = 0;
+                    X0=> WL0--  **     **
 
-                target = X0 ^ X1;
-                target_real = (target == 0) ? 0.25 : 0.75;
-            }
+                    X1=> WL1--  **     **
 
-            // N1, N3 line pulse occurence probability
-            q0 = X0_real;
-            q1 = X1_real;
-            q2 = X2;
+                    X2=> WL2--  **     **       ##
 
-            struct ADC_matrix feedforward1_N5;
-            state_switch(3);
-            int n3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
-            PIOC->PIO_SODR = n3; // N3 SET
-            delayMicroseconds(read_set_time);
-            feedforward1_N5 = feedforward_operation(WL0, WL1, WL2, WL3, WL4);
-            PIOC->PIO_CODR = n3; // N3 clear
+                         WL3--                  ##
 
-            struct ADC_matrix feedforward1_N6;
-            state_switch(5);
-            int n1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
-            PIOC->PIO_SODR = n1; // N1 SET
-            delayMicroseconds(read_set_time);
-            feedforward1_N6 = feedforward_operation(WL0, WL1, WL2, WL3, WL4);
-            PIOC->PIO_CODR = n1; // N1 clear
+                         WL4--                  ##
 
-            Activation_input_h1 = (32 * (double(feedforward1_N5.adc0 - feedforward1_N6.adc0) - double(X0 * ADC_mid[0][0]) - double(X1 * ADC_mid[0][1]) - double(X2 * ADC_mid[0][2]))) / (double(ADC_standard_max1) - double(ADC_standard_min1)); // activation function의 input으로 들어가는 부분
-            Activation_input_h2 = (32 * (double(feedforward1_N5.adc1 - feedforward1_N6.adc1) - double(X0 * ADC_mid10) - double(X1 * ADC_mid11) - double(X2 * ADC_mid12))) / (double(ADC_standard_max2) - double(ADC_standard_min2));             // activation function의 input으로 들어가는 부분
-            Activation_output_h1 = 1.0 / (1.0 + exp(-Activation_input_h1));
-            Activation_output_h2 = 1.0 / (1.0 + exp(-Activation_input_h2));
+                                |      |       |       |       |
+                                adc0    adc1    adc2    adc3    adc4
+                                h0      h1
+            */
 
-            // Feed-Forward 2--------------------------------------------------
-            // Pre-set Feed-Forward 2
-
-            /*
+            /* Feed-Forward 2
 
                          WL0--
 
                          WL1--
 
-            b2        => WL2--                  (2,2)
-            activation
-            output h1 => WL3--                  (3,2)                   q3
-            activation
-            output h2 => WL4--                  (4,2)                   q4
+            b2 (bias) => WL2--                  (2,2)
+            hiddenLayer
+            Value[0]  => WL3--                  (2,3)                   q3
+            hiddenLayer
+            Value[1]  => WL4--                  (2,4)                   q4
 
                                 |      |       |       |       |
                                 adc0    adc1    adc2    adc3    adc4
+                                                outputLayer
+                                                Value[0]
             */
 
-            X2 = 1;
-            X3 = Activation_output_h1;
-            X4 = Activation_output_h2;
+            // Feed-Forward 1 : Visible -> Hidden Layer ----------------------------
+            X[0] = rand() % 2;
+            X[1] = rand() % 2;
+            X[2] = 1;
+            X[3] = 0;
+            X[4] = 0;
+
+            for (int i = 0; i < 5; i++)
+            {
+                pulseWidthWL[i] = 6200;
+            }
+
+            X0_real = (X[0] == 0) ? 0 : 1; // WL0 = round(6200 * X0_real);
+            X1_real = (X[1] == 0) ? 0 : 1; // WL1 = round(6200 * X1_real);
+
+            target = X0_real ^ X1_real;
+            target_real = (target == 0) ? 0.25 : 0.75;
 
             // N1, N3 line pulse occurence probability
-            q3 = X3; // 4th row
-            q4 = X4; // 5th row
+            q[0] = X0_real;
+            q[1] = X1_real;
+            q[2] = X[2];
 
-            WL0 = 0;                // 2nd layer에 들어가는 input data이기 때문에 0이 되어야 함
-            WL1 = 0;                // 2nd layer에 들어가는 input data이기 때문에 0이 되어야 함
-            WL2 = 6200;             // 동일하게 bias 뉴런에 들어가는 고정값이 인가가 됨
-            WL3 = round(6200 * X3); // 첫 번째 layer에서 나온 값을 반영하여 값을 결정해주어야 함(실험 데이터가 들어가는 부분)
-            WL4 = round(6200 * X4); // 첫 번째 layer에서 나온 값을 반영하여 값을 결정해주어야 함(실험 데이터가 들어가는 부분)
+            Feedforward(X, pulseWidthWL, core);
+            hiddenLayer = calculateLayerValues(X, core);
+            // calculateLayerValues(X, core, hiddenLayer);
 
-            state_switch(3);
-            n3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
-            PIOC->PIO_SODR = n3; // N3 SET
-            delayMicroseconds(read_set_time);
-            ADC_o1_N5 = feedforward_operation_2nd(WL0, WL1, WL2, WL3, WL4);
-            PIOC->PIO_CODR = n3; // N3 Clear. 기존 코드에서 이 부분이 누락되어 있었는데 따라서 array 내 존재하는 모든 시냅스의 weight들이 weight 0으로 초기화 되었을 것으로 예상됨(N1과 N3가 동시에 켜져서)
+            // Feed-Forward 2 : Hidden -> Output Layer ----------------------------
+            X[0] = 0;
+            X[1] = 0;
+            X[2] = 1;
+            X[3] = hiddenLayer.activationValue[0]; // h0
+            X[4] = hiddenLayer.activationValue[1]; // h1
 
-            state_switch(5);
-            n1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
-            PIOC->PIO_SODR = n1; // N1 SET
-            delayMicroseconds(read_set_time);
-            ADC_o1_N6 = feedforward_operation_2nd(WL0, WL1, WL2, WL3, WL4);
-            PIOC->PIO_CODR = n1; // N1 Clear
+            PRINTER(X[3]);
+            PRINTER(X[4]);
 
-            ADC_o1_N56 = ADC_o1_N5 - ADC_o1_N6;
-            Activation_input_o1 = (32 * (double(ADC_o1_N56) - double(X2 * ADC_mid22) - double(X3 * ADC_mid23) - double(X4 * ADC_mid24))) / (double(ADC_standard_max3) - double(ADC_standard_min3));
-            Activation_output_o1 = 1.0 / (1.0 + exp(-Activation_input_o1));                                 // sigmoid function?
-            error = Activation_output_o1 - target_real;                                                     // error값을 (y-t)값으로 정의를 하였음
-            loss = 100 * error * error;                                                                     //  선형회귀에서 잘못 용어 정의한 것을 수정하여 loss라고 정의를 하였음
-            Output_b1 = amplification_factor * (Activation_output_o1) * (1 - Activation_output_o1) * error; // 해당 값은 backpropagate되는 양을 의미함. 이 때 ADC(0~1023 10bit)의 범위를 맞추기 위해서 amplification_factor를 곱해준다.
-            Output_b1_plus = abs(Output_b1);
+            for (int i = 0; i < 5; i++)
+            {
+                pulseWidthWL[i] = 6200;
+            }
+
+            // N1, N3 line pulse occurence probability
+            q[3] = X[3];
+            q[4] = X[4];
+
+            Feedforward(X, pulseWidthWL, core);
+            calculateLayerValues(X, core, outputLayer);
 
             // Back Propagation 1--------------------------------------------------
-            // Pre-set Back Propagation
-            WL0 = 0;
-            WL1 = 0;
-            WL2 = round(6200 * Output_b1_plus);
-            WL3 = 0;
-            WL4 = 0; // 앞서 정의된 Output_b1의 값에서 소자의 값을 반영한 특정값을 곱해준 만큼 역전(backpropagation)을 시켜줌(특정값은 feedforward 과정에서 곱해준 일정한 상수와 일치를 시켜주어야 한다)
+            /*
+                    adc0 --
 
-            struct ADC_matrix backpropagation_N5;
-            state_switch(4);
-            n3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
-            PIOC->PIO_SODR = n3; // N3 SET
-            delayMicroseconds(read_set_time);
-            backpropagation_N5 = feedforward_operation(WL0, WL1, WL2, WL3, WL4);
-            PIOC->PIO_CODR = n3;                 // N3 Clear
-            ADC_b3_N5 = backpropagation_N5.adc3; // 앞서 정의한 구조체의 x성분을 ADC_current_h1에 대입하는 과정
-            ADC_b4_N5 = backpropagation_N5.adc4; // 앞서 정의한 구조체의 y성분을 ADC_current_h2에 대입하는 과정
+                    adc1 --
 
-            struct ADC_matrix backpropagation_N6;
-            state_switch(6);
-            n1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
-            PIOC->PIO_SODR = n1; // N1 SET
-            delayMicroseconds(read_set_time);
-            backpropagation_N6 = feedforward_operation(WL0, WL1, WL2, WL3, WL4);
-            PIOC->PIO_CODR = n1; // N1 Clear
-            ADC_b3_N6 = backpropagation_N6.adc3;
-            ADC_b4_N6 = backpropagation_N6.adc4;
+                    adc2 --                  **(2,2)
 
-            ADC_b3_N56 = ADC_b3_N5 - ADC_b3_N6;
-            ADC_b4_N56 = ADC_b4_N5 - ADC_b4_N6;
+                    adc3 --                  **(2,3)
+                    b3
+                    adc4 --                  **(2,4)
+                    b4
+                                |      |       |       |       |
+                                Y[0]    Y[1]    Y[2]    Y[3]    Y[4]
+                                                BP_outputLayer
+            */
 
-            b3 = (32 * (double(ADC_b3_N56) - double(Output_b1_plus) * double((ADC_mid23)))) / (double(ADC_standard_max4) - double(ADC_standard_min4)); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
-            b4 = (32 * (double(ADC_b4_N56) - double(Output_b1_plus) * double((ADC_mid24)))) / (double(ADC_standard_max5) - double(ADC_standard_min5)); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
-            p2 = error * (Activation_output_o1) * (1 - Activation_output_o1);                                                                          // 사실 p2는 backpropagate전에 이미 결정된 값이지만, p0와 p1과 함께 표기하기 위해 이 곳에 표기, 이 때 p0, p1은 case에 따라서 부호를 달리해야할 것으로 보임
+            /*
+                Gradient Descent : Chain rule
 
-            if (error >= 0)
+            E       = 1/2 * (target - output)^2
+
+            dE/dw   = dE/d_output       * d_output/d_input      * d_input/dw
+                    = -(target-output)  * output * (1-output)   * last_value of sigmoid output
+                    = error             * output * (1-output)   * last_value of sigmoid output
+            */
+
+            // BackPropagation: Hidden Layer
+            // Y_hat = outputLayer.activationValue[0]
+            // Y = target_real
+
+            // BackPropagation: Input Layer
+
+            // Calculate error
+            error = outputLayer.activationValue[0] - target_real; // (y-t) value
+            double Error = 0.5 * error * error;
+            loss = 100 * error * error;
+            Serial.print("loss  = ");
+            Serial.println(loss);
+            ErrorEpochRecorder[epoch] = loss;
+
+            // Multiply amplification_factor for the value to be inside ADC(0~1023 10bit) range
+            double BP_outputLayer = error * (outputLayer.activationValue[0]) * (1 - outputLayer.activationValue[0]) * amplification_factor;
+            // 앞서 정의된 BP_outputLayer의 값에서 소자의 값을 반영한 특정값을 곱해준 만큼 역전(backpropagation)을 시켜줌(특정값은 feedforward 과정에서 곱해준 일정한 상수와 일치를 시켜주어야 한다)
+            Y[0] = 0;
+            Y[1] = 0;
+            Y[2] = abs(BP_outputLayer);
+            Y[3] = 0;
+            Y[4] = 0;
+
+            for (int i = 0; i < 5; i++)
             {
-                p0 = double(b3 * Activation_output_h1) * (1 - Activation_output_h1) / double(amplification_factor);
-                p1 = double(b4 * Activation_output_h2) * (1 - Activation_output_h2) / double(amplification_factor);
+                pulseWidthWL[i] = 6200;
             }
-            else
-            {
-                p0 = -1 * double(b3 * Activation_output_h1) * (1 - Activation_output_h1) / double(amplification_factor);
-                p1 = -1 * double(b4 * Activation_output_h2) * (1 - Activation_output_h2) / double(amplification_factor);
-            }
+
+            Backpropagation(Y, pulseWidthWL, core);
+            layer hiddenLayerBackProp;
+            hiddenLayerBackProp = calculateLayerValues(Y, core);
+            // calculateLayerValues(Y, core, hiddenLayerBackProp);
+
+            // Weight Update 1 : Output -> Hidden Layer ----------------------------
+            /* Weight Update
+
+                    Q[0] --
+
+                    Q[1] --
+
+                    Q[2] --                  **(2,2)
+
+                    Q[3] --                  **(2,3)
+
+                    Q[4] --                  **(2,4)
+
+                                |      |       |       |       |
+                                P[0]    P[1]    P[2]    P[3]    P[4]
+
+            */
 
             learning_rate_partial = sqrt(learning_rate);
-            P2 = round(6 * learning_rate_partial * 100000 * p2);
-            Q2 = round(0.1667 * learning_rate_partial * 100000 * q2);
-            Q3 = round(learning_rate_partial * 100000 * q3);
-            Q4 = round(learning_rate_partial * 100000 * q4);
 
-            if (P2 < 0)
+            p[2] = error * (outputLayer.activationValue[0]) * (1 - outputLayer.activationValue[0]);
+
+            P[0] = 0;
+            P[1] = 0;
+            P[2] = round(6 * learning_rate_partial * 100000 * p[2]);
+            P[3] = 0;
+            P[4] = 0;
+
+            Q[0] = 0;
+            Q[1] = 0;
+            Q[2] = round(0.1667 * learning_rate_partial * 100000 * q[2]);
+            Q[3] = round(learning_rate_partial * 100000 * q[3]);
+            Q[4] = round(learning_rate_partial * 100000 * q[4]);
+
+            if (P[2] < 0)
             {
-                for (int i = 0; i < BitLength; i++)
-                {
-                    N1[2][i] = ((rand() % 100000) + 1 <= Q2) ? 1 : 0;
-                    N1[3][i] = ((rand() % 100000) + 1 <= Q3) ? 1 : 0;
-                    N1[4][i] = ((rand() % 100000) + 1 <= Q4) ? 1 : 0;
-                    N2[2][i] = ((rand() % 100000) + 1 <= -P2) ? 1 : 0; // why (-) value?
-                }
-
-                Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulse_width, pre_enable_time, post_enable_time, zero_time);
+                SGDsetRegisterPotentiation(pulseWidth, preEnableTime, postEnableTime, zeroTime);
             }
             else
             {
-                for (int i = 0; i < BitLength; i++)
+                SGDsetRegisterDepression(pulseWidth, preEnableTime, postEnableTime, zeroTime);
+            }
+
+            // Weight Update 2 : Hidden -> Visible Layer -----------------------------
+            /*
+
+                    Q[0] --     **      **
+
+                    Q[1] --     **      **
+
+                    Q[2] --     **      **
+
+                    Q[3] --
+
+                    Q[4] --
+
+                                |      |       |       |       |
+                                P[0]    P[1]    P[2]    P[3]    P[4]
+                FeedForward     X[3]    X[4]
+                BackPropagation b3      b4     : from Y[2]
+            */
+
+            b3 = (32 * (double(core._ADCvalue[3]) - double(Y[2]) * double((core._mid[2][3])))) / (double(core._standard[3][max_val]) - double(core._standard[3][min_val])); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
+            b4 = (32 * (double(core._ADCvalue[4]) - double(Y[2]) * double((core._mid[2][4])))) / (double(core._standard[4][max_val]) - double(core._standard[4][min_val])); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
+
+            p[0] = double(b3) * X[3] * (1 - X[3]) / double(amplification_factor);
+            p[0] = (error >= 0) ? p[0] : -p[0];
+            // Error 가 (-) = p[0] value (-) =  Potentiation 필요 = N2 value (+) = N4 value (-)
+            p[1] = double(b4) * X[4] * (1 - X[4]) / double(amplification_factor);
+            p[1] = (error >= 0) ? p[1] : -p[1];
+
+            P[0] = round(12 * learning_rate_partial * 100000 * p[0]);
+            P[1] = round(12 * learning_rate_partial * 100000 * p[1]);
+            P[2] = 0;
+            P[3] = 0;
+            P[4] = 0;
+
+            Q[0] = round(0.1667 * learning_rate_partial * 100000 * q[0]);
+            Q[1] = round(0.1667 * learning_rate_partial * 100000 * q[1]);
+            Q[2] = round(0.1667 * learning_rate_partial * 100000 * q[2]);
+            Q[3] = 0;
+            Q[4] = 0;
+
+            // Why is there (-) on P[0] or P[1] on N2 - Potentiation and N4 - Depression
+
+            for (int i = 0; i < Bit_length; i++)
+            {
+                for (int j = 0; j < 5; j++)
                 {
-                    N3[2][i] = ((rand() % 100000) + 1 <= Q2) ? 1 : 0;
-                    N3[3][i] = ((rand() % 100000) + 1 <= Q3) ? 1 : 0;
-                    N3[4][i] = ((rand() % 100000) + 1 <= Q4) ? 1 : 0;
-                    N4[2][i] = ((rand() % 100000) + 1 <= P2) ? 1 : 0;
+                    N1[j][i] = ((rand() % 100000) + 1 <= Q[j]) ? 1 : 0; // j = 0, 1, 2, 3, 4 only
                 }
-
-                Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulse_width, pre_enable_time, post_enable_time, zero_time);
+                N2[0][i] = ((rand() % 100000) + 1 <= -P[0]) ? 1 : 0;
+                N2[1][i] = ((rand() % 100000) + 1 <= -P[1]) ? 1 : 0;
             }
+            Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 
-            P0 = round(12 * learning_rate_partial * 100000 * p0);
-            P1 = round(12 * learning_rate_partial * 100000 * p1);
-            Q0 = round(0.1667 * learning_rate_partial * 100000 * q0);
-            Q1 = round(0.1667 * learning_rate_partial * 100000 * q1);
-            Q2 = round(0.1667 * learning_rate_partial * 100000 * q2);
-            Q3 = 0;
-            Q4 = 0;
-            P2 = 0;
-
-            for (int i = 0; i < BitLength; i++)
+            for (int i = 0; i < Bit_length; i++)
             {
-                N1[0][i] = ((rand() % 100000) + 1 <= Q0) ? 1 : 0;
-                N1[1][i] = ((rand() % 100000) + 1 <= Q1) ? 1 : 0;
-                N1[2][i] = ((rand() % 100000) + 1 <= Q2) ? 1 : 0;
-                N1[3][i] = ((rand() % 100000) + 1 <= Q3) ? 1 : 0;
-                N1[4][i] = ((rand() % 100000) + 1 <= Q4) ? 1 : 0;
-                N2[0][i] = ((rand() % 100000) + 1 <= -P0) ? 1 : 0;
-                N2[1][i] = ((rand() % 100000) + 1 <= -P1) ? 1 : 0;
+                for (int j = 0; j < 5; j++)
+                {
+                    N3[j][i] = ((rand() % 100000) + 1 <= Q[j]) ? 1 : 0; // j = 0, 1, 2, 3, 4 only
+                }
+                N4[0][i] = ((rand() % 100000) + 1 <= -P[0]) ? 1 : 0;
+                N4[1][i] = ((rand() % 100000) + 1 <= -P[1]) ? 1 : 0;
             }
-            Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulse_width, pre_enable_time, post_enable_time, zero_time);
-
-            for (int i = 0; i < BitLength; i++)
-            {
-                N3[0][i] = ((rand() % 100000) + 1 <= Q0) ? 1 : 0;
-                N3[1][i] = ((rand() % 100000) + 1 <= Q1) ? 1 : 0;
-                N3[2][i] = ((rand() % 100000) + 1 <= Q2) ? 1 : 0;
-                N3[3][i] = ((rand() % 100000) + 1 <= Q3) ? 1 : 0;
-                N3[4][i] = ((rand() % 100000) + 1 <= Q4) ? 1 : 0;
-                N4[0][i] = ((rand() % 100000) + 1 <= -P0) ? 1 : 0;
-                N4[1][i] = ((rand() % 100000) + 1 <= -P1) ? 1 : 0;
-            }
-            Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulse_width, pre_enable_time, post_enable_time, zero_time);
+            Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
         }
     }
 }
-
-void initialize()
-{
-    String D0_string, D1_string, D2_string, D3_string, D4_string, pulse_width_string, pre_enable_string, post_enable_string, zero_time_string, epoch_string;
-    String Input_string;
-    int index[VAR_NUM] = {
-        0,
-    }; // 이는 배열의 모든 요소를 0으로 초기화한다는 의미임
-
-    for (int i = 0; i < 5; i++)
-    {
-        for (int j = 0; j < BitLength; j++)
-        {
-            N1[i][BitLength] = 0;
-            N2[i][BitLength] = 0;
-            N3[i][BitLength] = 0;
-            N4[i][BitLength] = 0;
-            N5[i][BitLength] = 0;
-        }
-    }
-
-    // ADC mid value initialization
-    for (int i = 0; i < 5; i++)
-    {
-        for (int j = 0; j < 5; j++)
-        {
-            ADC_mid[i][j] = 20;
-        }
-    }
-}
+//**************************************************************************************************************//
+/*---------------------METHODS----------------*/
 
 void state_switch(int state)
 {                   // Read 동작시에 CR핀 set할것, 조금씩 누적되는 경우 발생!
@@ -498,7 +543,7 @@ void state_switch(int state)
     }
 }
 
-void read_scaling_pulse(int Ds0, int Ds1, int Ds2, int Ds3, int Ds4)
+void read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4, int *result)
 {
     int d1 = 1;
     int d2 = 1 << 1;
@@ -506,52 +551,49 @@ void read_scaling_pulse(int Ds0, int Ds1, int Ds2, int Ds3, int Ds4)
     int d4 = 1 << 3;
     int d5 = 1 << 6;
     int ADC_1, ADC_2, ADC_3, ADC_4, ADC_0;
-    int set[MAX];
     int c = d1 | d2 | d3 | d4 | d5;
-    int D1[MAX], D2[MAX], D3[MAX], D4[MAX], D5[MAX];
+    int set[MAX];
+    int WL_0[MAX], WL_1[MAX], WL_2[MAX], WL_3[MAX], WL_4[MAX];
 
-    Serial.println(Ds0);
     for (int i = 0; i < MAX; i++)
     {
-        if (i < Ds0)
-            D1[i] = d1;
+        if (i < ds0)
+            WL_0[i] = d1;
         else
-            D1[i] = 0;
-        Serial.println(D1[i]);
+            WL_0[i] = 0;
     }
     for (int i = 0; i < MAX; i++)
     {
-        if (i < Ds1)
-            D2[i] = d2;
+        if (i < ds1)
+            WL_1[i] = d2;
         else
-            D2[i] = 0;
+            WL_1[i] = 0;
     }
     for (int i = 0; i < MAX; i++)
     {
-        if (i < Ds2)
-            D3[i] = d3;
+        if (i < ds2)
+            WL_2[i] = d3;
         else
-            D3[i] = 0;
+            WL_2[i] = 0;
     }
     for (int i = 0; i < MAX; i++)
     {
-        if (i < Ds3)
-            D4[i] = d4;
+        if (i < ds3)
+            WL_3[i] = d4;
         else
-            D4[i] = 0;
+            WL_3[i] = 0;
     }
     for (int i = 0; i < MAX; i++)
     {
-        if (i < Ds4)
-            D5[i] = d5;
+        if (i < ds4)
+            WL_4[i] = d5;
         else
-            D5[i] = 0;
+            WL_4[i] = 0;
     }
     for (int i = 0; i < MAX; i++)
     {
-        set[i] = D1[i] | D2[i] | D3[i] | D4[i] | D5[i];
+        set[i] = WL_0[i] | WL_1[i] | WL_2[i] | WL_3[i] | WL_4[i];
     }
-
     PIOB->PIO_CODR = 1 << 14; // CON
     PIOA->PIO_SODR = 1 << 19; // DS
     PIOB->PIO_SODR = 1 << 21; // CR
@@ -562,7 +604,7 @@ void read_scaling_pulse(int Ds0, int Ds1, int Ds2, int Ds3, int Ds4)
         PIOA->PIO_SODR = 1 << 7; // DFF1 CLK HIGH
         PIOA->PIO_CODR = 1 << 7; // DFF1 CLK LOW
         PIOD->PIO_CODR = c;      // D clear
-        delayMicroseconds(1000);
+        delayMicroseconds(100);  // read 한 번 돌때의 단위로 추정됨. 이는 random한 input data를 가지고 실험할 때는 더 줄여야 함.
     }
     PIOA->PIO_SODR = 1 << 7;  // DFF1 CLK HIGH
     PIOA->PIO_CODR = 1 << 7;  // DFF1 CLK LOW
@@ -576,142 +618,344 @@ void read_scaling_pulse(int Ds0, int Ds1, int Ds2, int Ds3, int Ds4)
     ADC_4 = ADC->ADC_CDR[3];  // read data on A4
     PIOB->PIO_CODR = 1 << 21; // CR
 
-    Serial.print("ADC0 Value =");
-    Serial.print(ADC_0 / 4);
-    Serial.print(", ADC1 Value =");
-    Serial.print(ADC_1 / 4);
-    Serial.print(", ADC2 Value =");
-    Serial.print(ADC_2 / 4);
-    Serial.print(", ADC3 Value =");
-    Serial.print(ADC_3 / 4);
-    Serial.print(", ADC4 Value =");
-    Serial.println(ADC_4 / 4);
+    result[0] = ADC_0 / 4; // ADC0 value
+    result[1] = ADC_1 / 4; // ADC1 value
+    result[2] = ADC_2 / 4; // ADC2 value
+    result[3] = ADC_3 / 4; // ADC3 value
+    result[4] = ADC_4 / 4; // ADC4 value
 }
 
-void Potentiation(int *UP0, int *UP1, int *UP2, int *UP3, int *UP4, int *UP_EN0, int *UP_EN1, int *UP_EN2, int *UP_EN3, int *UP_EN4)
+void Potentiation(int *N1_0, int *N1_1, int *N1_2, int *N1_3, int *N1_4, int *N2_0, int *N2_1, int *N2_2, int *N2_3, int *N2_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time)
 {
-    int c0, c1, up0, up1, up2, up3, up4, upen0, upen1, upen2, upen3, upen4 = 0;
-    int set[MAX];
-    int seten[MAX];
-    for (int i = 0; i < MAX; i++)
-    {
-        if (UP0[i] == 1)
-            up0 = 1 << 12; // 여기서의 up는 update potentiation의 줄임말로(고려대학교에서 처음 지정한 용어이기 때문에 조금 어색할 수 있습니다!) up0은 N1_0의 어레이 라인을 의미합니다.
-        else
-            up0 = 0;
-        if (UP1[i] == 1)
-            up1 = 1 << 13; // 역시나 up1은 N1_1 line을 의미합니다.
-        else
-            up1 = 0;
-        if (UP2[i] == 1)
-            up2 = 1 << 14; // up2는 N1_2 line을 의미
-        else
-            up2 = 0;
-        if (UP3[i] == 1)
-            up3 = 1 << 15; // up3은 N1_3 line을 의미
-        else
-            up3 = 0;
-        if (UP4[i] == 1)
-            up4 = 1 << 16; // up4는 N1_4 line을 의미
-        else
-            up4 = 0;
-        if (UP_EN0[i] == 1)
-            upen0 = 1 << 7; // upen은 update potentiation enable의 줄임말로(역시나 고려대학교 지정 언어로 조금 어색합니다!) N2를 의미합니다. 즉, upen0는 N2_0 line을 의미합니다.
-        else
-            upen0 = 0;
-        if (UP_EN1[i] == 1)
-            upen1 = 1 << 6; // upen1은 N2_1 line을 의미합니다.
-        else
-            upen1 = 0;
-        if (UP_EN2[i] == 1)
-            upen2 = 1 << 5; // upen2는 N2_2 line을 의미합니다.
-        else
-            upen2 = 0;
-        if (UP_EN3[i] == 1)
-            upen3 = 1 << 4; // upen3은 N2_3 line을 의미합니다.
-        else
-            upen3 = 0;
-        if (UP_EN4[i] == 1)
-            upen4 = 1 << 3; // upen4는 N2_4 line을 의미합니다. 각각 비트 이동연산자가 쓰인 우변이 실제 어레이에서는 어떤 라인에 해당되는지 이걸보면 더 이해가 잘 되시지 않을까 생각합니다!
-        else
-            upen4 = 0;
+    int n1_0, n1_1, n1_2, n1_3, n1_4, n2_0, n2_1, n2_2, n2_3, n2_4 = 0;
+    int set[Bit_length];
+    int set_update[Bit_length];
+    int n1_clear = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
+    int n2_clear = (1 << 7) | (1 << 6) | (1 << 5) | (1 << 4) | (1 << 3);
 
-        set[i] = up0 | up1 | up2 | up3 | up4;
-        seten[i] = upen0 | upen1 | upen2 | upen3 | upen4;
+    PIOB->PIO_CODR = 1 << 26; // digitalWrite(FB,LOW)
+    PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
+
+    for (int i = 0; i < Bit_length; i++)
+    {
+        if (N1_0[i] == 1)
+            n1_0 = 1 << 12;
+        else
+            n1_0 = 0;
+        if (N1_1[i] == 1)
+            n1_1 = 1 << 13;
+        else
+            n1_1 = 0;
+        if (N1_2[i] == 1)
+            n1_2 = 1 << 14;
+        else
+            n1_2 = 0;
+        if (N1_3[i] == 1)
+            n1_3 = 1 << 15;
+        else
+            n1_3 = 0;
+        if (N1_4[i] == 1)
+            n1_4 = 1 << 16;
+        else
+            n1_4 = 0;
+        if (N2_0[i] == 1)
+            n2_0 = 1 << 7;
+        else
+            n2_0 = 0;
+        if (N2_1[i] == 1)
+            n2_1 = 1 << 6;
+        else
+            n2_1 = 0;
+        if (N2_2[i] == 1)
+            n2_2 = 1 << 5;
+        else
+            n2_2 = 0;
+        if (N2_3[i] == 1)
+            n2_3 = 1 << 4;
+        else
+            n2_3 = 0;
+        if (N2_4[i] == 1)
+            n2_4 = 1 << 3;
+        else
+            n2_4 = 0;
+
+        set[i] = n1_0 | n1_1 | n1_2 | n1_3 | n1_4;
+        set_update[i] = n2_0 | n2_1 | n2_2 | n2_3 | n2_4;
     }
 
-    for (int i = 0; i < MAX; i++)
+    for (int i = 0; i < Bit_length; i++)
     {
-        PIOC->PIO_SODR = set[i];   // up set
-        delayMicroseconds(10);     // N1 N2 pulse delay setting, pulse rising edge
-        PIOC->PIO_SODR = seten[i]; // up_en set
-        delayMicroseconds(10);     // N1 N2 pulse width setting
-        PIOC->PIO_CODR = seten[i]; // up_en clear
-        delayMicroseconds(10);     // N1 N2 pulse delay setting. pulse falling edge
-        PIOC->PIO_CODR = set[i];   // up clear
+        PIOC->PIO_CODR = n1_clear; // N1 clear
+        PIOC->PIO_CODR = n2_clear; // N2 clear
+        delayMicroseconds(zero_time);
+        PIOC->PIO_SODR = set[i]; // N1 set
+        delayMicroseconds(pre_enable_time);
+        PIOC->PIO_SODR = set_update[i];      // N2 set
+        delayMicroseconds(pulse_width);      // N1 N2 pulse width setting
+        PIOC->PIO_CODR = n2_clear;           // N2 clear
+        delayMicroseconds(post_enable_time); // N1 N2 pulse delay setting
+        PIOC->PIO_CODR = n1_clear;           // N1 clear
+        delayMicroseconds(zero_time);
     }
 }
 
-void Depression(int *UD0, int *UD1, int *UD2, int *UD3, int *UD4, int *UD_EN0, int *UD_EN1, int *UD_EN2, int *UD_EN3, int *UD_EN4)
+void Depression(int *N3_0, int *N3_1, int *N3_2, int *N3_3, int *N3_4, int *N4_0, int *N4_1, int *N4_2, int *N4_3, int *N4_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time)
 {
-    int ud0, ud1, ud2, ud3, ud4, uden0, uden1, uden2, uden3, uden4 = 0;
-    int set[MAX];
-    int seten[MAX];
-    for (int i = 0; i < MAX; i++)
-    {
-        if (UD0[i] == 1)
-            ud0 = 1 << 17;
-        else
-            ud0 = 0;
-        if (UD1[i] == 1)
-            ud1 = 1 << 18;
-        else
-            ud1 = 0;
-        if (UD2[i] == 1)
-            ud2 = 1 << 19;
-        else
-            ud2 = 0;
-        if (UD3[i] == 1)
-            ud3 = 1 << 9;
-        else
-            ud3 = 0;
-        if (UD4[i] == 1)
-            ud4 = 1 << 8;
-        else
-            ud4 = 0;
-        if (UD_EN0[i] == 1)
-            uden0 = 1 << 2;
-        else
-            uden0 = 0;
-        if (UD_EN1[i] == 1)
-            uden1 = 1 << 1;
-        else
-            uden1 = 0;
-        if (UD_EN2[i] == 1)
-            uden2 = 1 << 23;
-        else
-            uden2 = 0;
-        if (UD_EN3[i] == 1)
-            uden3 = 1 << 24;
-        else
-            uden3 = 0;
-        if (UD_EN4[i] == 1)
-            uden4 = 1 << 25;
-        else
-            uden4 = 0;
+    int n3_0, n3_1, n3_2, n3_3, n3_4, n4_0, n4_1, n4_2, n4_3, n4_4 = 0;
+    int set[Bit_length];
+    int set_update[Bit_length];
+    int n3_clear = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
+    int n4_clear = (1 << 2) | (1 << 1) | (1 << 23) | (1 << 24) | (1 << 25);
 
-        set[i] = ud0 | ud1 | ud2 | ud3 | ud4;
-        seten[i] = uden0 | uden1 | uden2 | uden3 | uden4;
+    PIOB->PIO_CODR = 1 << 26; // digitalWrite(FB,LOW)
+    PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
+
+    for (int i = 0; i < Bit_length; i++)
+    {
+        if (N3_0[i] == 1)
+            n3_0 = 1 << 17;
+        else
+            n3_0 = 0;
+        if (N3_1[i] == 1)
+            n3_1 = 1 << 18;
+        else
+            n3_1 = 0;
+        if (N3_2[i] == 1)
+            n3_2 = 1 << 19;
+        else
+            n3_2 = 0;
+        if (N3_3[i] == 1)
+            n3_3 = 1 << 9;
+        else
+            n3_3 = 0;
+        if (N3_4[i] == 1)
+            n3_4 = 1 << 8;
+        else
+            n3_4 = 0;
+        if (N4_0[i] == 1)
+            n4_0 = 1 << 2;
+        else
+            n4_0 = 0;
+        if (N4_1[i] == 1)
+            n4_1 = 1 << 1;
+        else
+            n4_1 = 0;
+        if (N4_2[i] == 1)
+            n4_2 = 1 << 23;
+        else
+            n4_2 = 0;
+        if (N4_3[i] == 1)
+            n4_3 = 1 << 24;
+        else
+            n4_3 = 0;
+        if (N4_4[i] == 1)
+            n4_4 = 1 << 25;
+        else
+            n4_4 = 0;
+
+        set[i] = n3_0 | n3_1 | n3_2 | n3_3 | n3_4;
+        set_update[i] = n4_0 | n4_1 | n4_2 | n4_3 | n4_4;
     }
 
-    for (int i = 0; i < MAX; i++)
+    for (int i = 0; i < Bit_length; i++)
     {
-        PIOC->PIO_SODR = set[i]; // ud set, SODR : off->on
-        delayMicroseconds(10);
-        PIOC->PIO_SODR = seten[i]; // ud_en set
-        delayMicroseconds(10);
-        PIOC->PIO_CODR = seten[i]; // ud_en clear, CODR : on->off
-        delayMicroseconds(10);
-        PIOC->PIO_CODR = set[i]; // ud clear
+        PIOC->PIO_CODR = n3_clear; // N3 clear
+        PIOC->PIO_CODR = n4_clear; //// N4 clear
+        delayMicroseconds(zero_time);
+        PIOC->PIO_SODR = set[i]; // N3 set
+        delayMicroseconds(pre_enable_time);
+        PIOC->PIO_SODR = set_update[i];      // N4 set
+        delayMicroseconds(pulse_width);      // N3 N4 pulse width setting
+        PIOC->PIO_CODR = n4_clear;           // N4 clear
+        delayMicroseconds(post_enable_time); // N3 N4 pulse delay setting
+        PIOC->PIO_CODR = n3_clear;           // N3 clear
+        delayMicroseconds(zero_time);
     }
+}
+
+void Feedforward(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core)
+{
+    int WL[5];
+
+    for (int i = 0; i < 5; i++)
+    {
+        WL[i] = round(arg_X[i] * arg_pulseWidthWL[i]);
+    }
+
+    arg_core.setWLPulseWidth(WL[0], WL[1], WL[2], WL[3], WL[4]);
+
+    state_switch(3);
+    int N3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
+    PIOC->PIO_SODR = N3; // N3 SET
+    delayMicroseconds(read_set_time);
+    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
+    PIOC->PIO_CODR = N3; // N3 clear
+
+    state_switch(5);
+    int N1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
+    PIOC->PIO_SODR = N1; // N1 SET
+    delayMicroseconds(read_set_time);
+    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN6);
+    PIOC->PIO_CODR = N1; // N1 clear
+
+    arg_core.setADCvalue();
+    for (int i = 0; i < 5; i++)
+    {
+        PRINTER(arg_core._ADCvalue[i]);
+    }
+};
+
+void Backpropagation(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core)
+{
+    int WL[5];
+
+    for (int i = 0; i < 5; i++)
+    {
+        WL[i] = round(arg_X[i] * arg_pulseWidthWL[i]);
+    }
+
+    arg_core.setWLPulseWidth(WL[0], WL[1], WL[2], WL[3], WL[4]);
+
+    state_switch(4);
+    int N3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
+    PIOC->PIO_SODR = N3; // N3 SET
+    delayMicroseconds(read_set_time);
+    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
+    PIOC->PIO_CODR = N3; // N3 Clear
+
+    state_switch(6);
+    int N1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
+    PIOC->PIO_SODR = N1; // N1 SET
+    delayMicroseconds(read_set_time);
+    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN6);
+    PIOC->PIO_CODR = N1; // N1 Clear
+
+    // Calculate ADC N5 value - ADC N6 value and save to ADC value in the core
+    arg_core.setADCvalue();
+    // for (int i = 0; i < 5; i++)
+    // {
+    //     PRINTER(arg_core._ADCvalue[i]);
+    // }
+};
+
+void calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core, layer &arg_layer)
+{
+    double var_midValueADCSum;
+    for (int i = 0; i < 5; i++)
+    {
+        var_midValueADCSum = 0.0;
+        for (int j = 0; j < 5; j++)
+        {
+            var_midValueADCSum += arg_X[j] * core._mid[i][j];
+        }
+
+        arg_layer.wsum[i] = 32 * (double(arg_core._ADCvalue[i]) - var_midValueADCSum) / (double(arg_core._standard[i][max_val]) - double(arg_core._standard[i][min_val]));
+
+        // Activation Function - Sigmoid Function
+        arg_layer.activationValue[i] = sigmoidActivFunc(arg_layer.wsum[i]);
+        arg_layer.activationValue[i] = (arg_layer.activationValue[i] > DECISION_BOUNDARY) ? 1 : 0;
+    }
+};
+
+layer calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core)
+{
+    layer arg_layer;
+    double var_midValueADCSum;
+    for (int i = 0; i < 5; i++)
+    {
+        var_midValueADCSum = 0.0;
+        for (int j = 0; j < 5; j++)
+        {
+            var_midValueADCSum += arg_X[j] * core._mid[i][j];
+        }
+
+        arg_layer.wsum[i] = 32 * (double(arg_core._ADCvalue[i]) - var_midValueADCSum) / (double(arg_core._standard[i][max_val]) - double(arg_core._standard[i][min_val]));
+
+        // Activation Function - Sigmoid Function
+        arg_layer.activationValue[i] = sigmoidActivFunc(arg_layer.wsum[i]);
+        arg_layer.activationValue[i] = (arg_layer.activationValue[i] > DECISION_BOUNDARY) ? 1 : 0;
+    }
+    return arg_layer;
+}
+
+double sigmoidActivFunc(double &x)
+{
+    return 1.0 / (1.0 + std::exp(x));
+}
+
+double tanhActivFunc(double &x)
+{
+    double ex = std::exp(x);
+    double enx = std::exp(-x);
+    return (ex - enx) / (ex + enx);
+}
+
+double BinaryCrossentropy(double &y_hat, double &y)
+{
+    return -y * log(y_hat) + (1 - y) * log(1 - y_hat);
+}
+
+void SGDsetRegisterPotentiation(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
+{
+    for (int i = 0; i < Bit_length; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            if (abs(Q[j]) == 0)
+            {
+                N1[j][i] = 0;
+            }
+            else
+            {
+                N1[j][i] = ((rand() % 100000) + 1 <= Q[j]) ? 1 : 0; // j = 2, 3, 4 only
+            }
+
+            if (abs(P[j]) == 0)
+            {
+                N2[j][i] = 0;
+            }
+            else
+            {
+                N2[j][i] = ((rand() % 100000) + 1 <= P[j]) ? 1 : 0; // j = 2 only
+            }
+        }
+    }
+    Potentiation(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
+};
+
+void SGDsetRegisterDepression(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
+{
+    for (int i = 0; i < Bit_length; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            if (abs(Q[j]) == 0)
+            {
+                N3[j][i] = 0;
+            }
+            else
+            {
+                N3[j][i] = ((rand() % 100000) + 1 <= Q[j]) ? 1 : 0; // j = 2, 3, 4 only
+            }
+
+            if (abs(P[j]) == 0)
+            {
+                N4[j][i] = 0;
+            }
+            else
+            {
+                N4[j][i] = ((rand() % 100000) + 1 <= P[j]) ? 1 : 0; // j = 2 only
+            }
+        }
+    }
+    Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
+};
+
+void printer(char *name, double value)
+{
+    Serial.print("name: ");
+    Serial.print(name);
+    Serial.print(" value: ");
+    Serial.print(value);
+    Serial.println("");
 }
