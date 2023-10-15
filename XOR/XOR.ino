@@ -326,7 +326,8 @@ void loop()
             q[4] = X[4];
 
             Feedforward(X, pulseWidthWL, core);
-            calculateLayerValues(X, core, outputLayer);
+            outputLayer = calculateLayerValues(X, core);
+            // calculateLayerValues(X, core, outputLayer);
 
             // Back Propagation 1--------------------------------------------------
             /*
