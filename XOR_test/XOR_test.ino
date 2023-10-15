@@ -76,6 +76,7 @@ SAM3X-Arduino Pin Mapping
 #define MAX 120          // Read pulse set까지의 시간을 위하여
 #define Bit_length 10    // update할 때의 timing을 맞추기 위해서 따로 정의
 #define read_set_time 1  // [ms]
+#define read_delay 1     // [ms]
 #define VAR_NUM 10       // 총 Input variable 수를 정의할 것
 #define learning_rate 30 // 1st layer의 learning rate 정의
 #define amplification_factor 8
