@@ -856,3 +856,10 @@ void SGDsetRegisterDepression(int pulseWidth, int preEnableTime, int postEnableT
 };
 
 void printer(char *name, double value)
+{
+    Serial.print("name: ");
+    Serial.print(name);
+    Serial.print(" value: ");
+    Serial.print(value);
+    Serial.println("");
+}
