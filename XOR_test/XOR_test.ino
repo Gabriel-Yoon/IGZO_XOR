@@ -297,7 +297,7 @@ void loop()
             X1_real = (X[1] == 0) ? 0 : 1; // WL1 = round(6200 * X1_real);
 
             target = X0_real ^ X1_real;
-            target_real = (target == 0) ? 0.25 : 0.75;
+            target_real = (target == 0) ? 0 : 1;
 
             // N1, N3 line pulse occurence probability
             q[0] = X0_real;
