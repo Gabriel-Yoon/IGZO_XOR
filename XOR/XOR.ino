@@ -288,7 +288,7 @@ void loop()
 
             for (int i = 0; i < 5; i++)
             {
-                pulseWidthWL[i] = 6200;
+                pulseWidthWL[i] = pulseWidth;
             }
 
             X0_real = (X[0] == 0) ? 0 : 1; // WL0 = round(6200 * X0_real);
@@ -318,7 +318,7 @@ void loop()
 
             for (int i = 0; i < 5; i++)
             {
-                pulseWidthWL[i] = 6200;
+                pulseWidthWL[i] = pulseWidth;
             }
 
             // N1, N3 line pulse occurence probability
@@ -383,7 +383,7 @@ void loop()
 
             for (int i = 0; i < 5; i++)
             {
-                pulseWidthWL[i] = 6200;
+                pulseWidthWL[i] = pulseWidth;
             }
 
             Backpropagation(Y, pulseWidthWL, core);
