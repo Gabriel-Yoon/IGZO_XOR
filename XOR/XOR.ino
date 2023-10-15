@@ -370,6 +370,8 @@ void loop()
             Serial.println(loss);
             ErrorEpochRecorder[epoch] = loss;
 
+            PRINTER(outputLayer.activationValue[0]);
+
             // Multiply amplification_factor for the value to be inside ADC(0~1023 10bit) range
             double BP_outputLayer = error * (outputLayer.activationValue[0]) * (1 - outputLayer.activationValue[0]) * amplification_factor;
             // 앞서 정의된 BP_outputLayer의 값에서 소자의 값을 반영한 특정값을 곱해준 만큼 역전(backpropagation)을 시켜줌(특정값은 feedforward 과정에서 곱해준 일정한 상수와 일치를 시켜주어야 한다)
