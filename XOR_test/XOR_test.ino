@@ -245,6 +245,135 @@ void loop()
             Serial.print("epoch = ");
             Serial.println(i + 1);
 
+            // XOR Problem Scheme
+            /* Feed-Forward 1
+
+                    X0=> WL0--  **     **
+
+                    X1=> WL1--  **     **
+
+                    X2=> WL2--  **     **       ##
+
+                         WL3--                  ##
+
+                         WL4--                  ##
+
+                                |      |       |       |       |
+                                adc0    adc1    adc2    adc3    adc4
+                                h0      h1
+            */
+
+            /* Feed-Forward 2
+
+                         WL0--
+
+                         WL1--
+
+            b2 (bias) => WL2--                  (2,2)
+            hiddenLayer
+            Value[0]  => WL3--                  (2,3)                   q3
+            hiddenLayer
+            Value[1]  => WL4--                  (2,4)                   q4
+
+                                |      |       |       |       |
+                                adc0    adc1    adc2    adc3    adc4
+                                                outputLayer
+                                                Value[0]
+            */
+
+            // Feed-Forward 1 : Visible -> Hidden Layer ----------------------------
+            X[0] = rand() % 2;
+            X[1] = rand() % 2;
+            X[2] = 1;
+            X[3] = 0;
+            X[4] = 0;
+
+            for (int i = 0; i < 5; i++)
+            {
+                pulseWidthWL[i] = pulseWidth;
+            }
+
+            X0_real = (X[0] == 0) ? 0 : 1; // WL0 = round(6200 * X0_real);
+            X1_real = (X[1] == 0) ? 0 : 1; // WL1 = round(6200 * X1_real);
+
+            target = X0_real ^ X1_real;
+            target_real = (target == 0) ? 0.25 : 0.75;
+
+            // N1, N3 line pulse occurence probability
+            q[0] = X0_real;
+            q[1] = X1_real;
+            q[2] = X[2];
+
+            Feedforward(X, pulseWidthWL, core);
+            hiddenLayer = calculateLayerValues(X, core);
+            // calculateLayerValues(X, core, hiddenLayer);
+
+            // Feed-Forward 2 : Hidden -> Output Layer ----------------------------
+            X[0] = 0;
+            X[1] = 0;
+            X[2] = 1;
+            X[3] = hiddenLayer.activationValue[0]; // h0
+            X[4] = hiddenLayer.activationValue[1]; // h1
+
+            PRINTER(X[3]);
+            PRINTER(X[4]);
+
+            for (int i = 0; i < 5; i++)
+            {
+                pulseWidthWL[i] = pulseWidth;
+            }
+
+            // N1, N3 line pulse occurence probability
+            q[3] = X[3];
+            q[4] = X[4];
+
+            Feedforward(X, pulseWidthWL, core);
+            outputLayer = calculateLayerValues(X, core);
+            // calculateLayerValues(X, core, outputLayer);
+
+            // Back Propagation 1--------------------------------------------------
+            /*
+                    adc0 --
+
+                    adc1 --
+
+                    adc2 --                  **(2,2)
+
+                    adc3 --                  **(2,3)
+                    b3
+                    adc4 --                  **(2,4)
+                    b4
+                                |      |       |       |       |
+                                Y[0]    Y[1]    Y[2]    Y[3]    Y[4]
+                                                BP_outputLayer
+            */
+
+            /*
+                Gradient Descent : Chain rule
+
+            E       = 1/2 * (target - output)^2
+
+            dE/dw   = dE/d_output       * d_output/d_input      * d_input/dw
+                    = -(target-output)  * output * (1-output)   * last_value of sigmoid output
+                    = error             * output * (1-output)   * last_value of sigmoid output
+            */
+
+            // BackPropagation: Hidden Layer
+            // Y_hat = outputLayer.activationValue[0]
+            // Y = target_real
+
+            // BackPropagation: Input Layer
+
+            // Calculate error
+            error = outputLayer.activationValue[0] - target_real; // (y-t) value
+            double Error = 0.5 * error * error;
+            loss = 100 * error * error;
+            Serial.print("loss  = ");
+            Serial.println(loss);
+            ErrorEpochRecorder[epoch] = loss;
+
+            PRINTER(outputLayer.activationValue[0]);
+
             // Multiply amplification_factor for the value to be inside ADC(0~1023 10bit) range
             // double BP_outputLayer = error * (outputLayer.activationValue[0]) * (1 - outputLayer.activationValue[0]) * amplification_factor;
 
