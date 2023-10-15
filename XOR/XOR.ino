@@ -76,6 +76,7 @@ SAM3X-Arduino Pin Mapping
 #define MAX 120          // Read pulse set까지의 시간을 위하여
 #define Bit_length 10    // update할 때의 timing을 맞추기 위해서 따로 정의
 #define read_set_time 1  // [ms]
+#define read_delay 1     // [ms]
 #define VAR_NUM 10       // 총 Input variable 수를 정의할 것
 #define learning_rate 30 // 1st layer의 learning rate 정의
 #define amplification_factor 8
@@ -630,6 +631,104 @@ void read_scaling_pulse(int ds0, int ds1, int ds2, int ds3, int ds4, int *result
     result[4] = ADC_4 / 4; // ADC4 value
 }
 
+void read_scaling(int ds0, int ds1, int ds2, int ds3, int ds4, int *result)
+{
+    int d1 = 1;
+    int d2 = 1 << 1;
+    int d3 = 1 << 2;
+    int d4 = 1 << 3;
+    int d5 = 1 << 6;
+    int ADC_1, ADC_2, ADC_3, ADC_4, ADC_0;
+    int c = d1 | d2 | d3 | d4 | d5;
+    int set[MAX];
+    int WL_0[MAX], WL_1[MAX], WL_2[MAX], WL_3[MAX], WL_4[MAX];
+
+    for (int i = 0; i < MAX; i++)
+    {
+        if (i < ds0)
+            WL_0[i] = d1;
+        else
+            WL_0[i] = 0;
+    }
+    for (int i = 0; i < MAX; i++)
+    {
+        if (i < ds1)
+            WL_1[i] = d2;
+        else
+            WL_1[i] = 0;
+    }
+    for (int i = 0; i < MAX; i++)
+    {
+        if (i < ds2)
+            WL_2[i] = d3;
+        else
+            WL_2[i] = 0;
+    }
+    for (int i = 0; i < MAX; i++)
+    {
+        if (i < ds3)
+            WL_3[i] = d4;
+        else
+            WL_3[i] = 0;
+    }
+    for (int i = 0; i < MAX; i++)
+    {
+        if (i < ds4)
+            WL_4[i] = d5;
+        else
+            WL_4[i] = 0;
+    }
+    for (int i = 0; i < MAX; i++)
+    {
+        set[i] = WL_0[i] | WL_1[i] | WL_2[i] | WL_3[i] | WL_4[i];
+    }
+
+    PIOB->PIO_CODR = 1 << 14; // CON
+    PIOA->PIO_SODR = 1 << 19; // DS
+    PIOB->PIO_SODR = 1 << 21; // CR
+
+    for (int i = 0; i < read_set_time; i++)
+    {
+        PIOD->PIO_SODR = set[i]; // WL SET
+        PIOA->PIO_SODR = 1 << 7; // DFF1 CLK HIGH
+        PIOA->PIO_CODR = 1 << 7; // DFF1 CLK LOW
+        PIOD->PIO_CODR = c;      // WL clear
+        delayMicroseconds(1000); //
+    }
+    for (int i = 0; i < read_delay; i++)
+    {
+        PIOD->PIO_SODR = 0;      //
+        PIOA->PIO_SODR = 1 << 7; // DFF1 CLK HIGH
+        PIOA->PIO_CODR = 1 << 7; // DFF1 CLK LOW
+        PIOD->PIO_CODR = set[i]; // WL clear
+        delayMicroseconds(10);   //
+    }
+
+    PIOA->PIO_SODR = 1 << 7;  // DFF1 CLK HIGH
+    PIOA->PIO_CODR = 1 << 7;  // DFF1 CLK LOW
+    PIOA->PIO_CODR = 1 << 19; // DS ON
+    PIOB->PIO_SODR = 1 << 14; // CON OFF
+
+    ADC_0 = ADC->ADC_CDR[7];  // read data on A0
+    ADC_1 = ADC->ADC_CDR[6];  // read data on A1
+    ADC_2 = ADC->ADC_CDR[5];  // read data on A2
+    ADC_3 = ADC->ADC_CDR[4];  // read data on A3
+    ADC_4 = ADC->ADC_CDR[3];  // read data on A4
+    PIOB->PIO_CODR = 1 << 21; // CR
+
+    Serial.print(ADC_0 / 4);
+    Serial.print(",");
+    Serial.print(ADC_1 / 4);
+    Serial.print(",");
+    Serial.print(ADC_2 / 4);
+    Serial.print(",");
+    Serial.print(ADC_3 / 4);
+    Serial.print(",");
+    Serial.print(ADC_4 / 4);
+
+    //  return ADC_0;
+}
+
 void Potentiation(int *N1_0, int *N1_1, int *N1_2, int *N1_3, int *N1_4, int *N2_0, int *N2_1, int *N2_2, int *N2_3, int *N2_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time)
 {
     int n1_0, n1_1, n1_2, n1_3, n1_4, n2_0, n2_1, n2_2, n2_3, n2_4 = 0;
@@ -793,14 +892,18 @@ void Feedforward(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_cor
     int N3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
     PIOC->PIO_SODR = N3; // N3 SET
     delayMicroseconds(read_set_time);
-    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
+    read_scaling(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
+    // read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
     PIOC->PIO_CODR = N3; // N3 clear
+
+    delayMicroseconds(20); // to separate N5 / N6 reads
 
     state_switch(5);
     int N1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
     PIOC->PIO_SODR = N1; // N1 SET
     delayMicroseconds(read_set_time);
-    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN6);
+    read_scaling(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
+    // read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN6);
     PIOC->PIO_CODR = N1; // N1 clear
 
     arg_core.setADCvalue();
@@ -826,14 +929,18 @@ void Backpropagation(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg
     int N3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
     PIOC->PIO_SODR = N3; // N3 SET
     delayMicroseconds(read_set_time);
-    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
+    read_scaling(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
+    // read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
     PIOC->PIO_CODR = N3; // N3 Clear
+
+    delayMicroseconds(20); // to separate N5 / N6 reads
 
     state_switch(6);
     int N1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
     PIOC->PIO_SODR = N1; // N1 SET
     delayMicroseconds(read_set_time);
-    read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN6);
+    read_scaling(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN5);
+    // read_scaling_pulse(WL[0], WL[1], WL[2], WL[3], WL[4], arg_core._ADCvalueN6);
     PIOC->PIO_CODR = N1; // N1 Clear
 
     // Calculate ADC N5 value - ADC N6 value and save to ADC value in the core
