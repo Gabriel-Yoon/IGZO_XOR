@@ -902,7 +902,7 @@ layer calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core)
             var_midValueADCSum += arg_X[j] * core._mid[i][j];
         }
 
-        arg_layer.wsum[i] = 32 * (double(arg_core._ADCvalue[i]) - var_midValueADCSum) / (double(arg_core._standard[i][max_val]) - double(arg_core._standard[i][min_val]));
+        arg_layer.wsum[i] = (double(arg_core._ADCvalue[i]) - var_midValueADCSum) / (double(arg_core._standard[i][max_val]) - double(arg_core._standard[i][min_val]));
 
         // Activation Function - Sigmoid Function
         arg_layer.activationValue[i] = sigmoidActivFunc(arg_layer.wsum[i]);
