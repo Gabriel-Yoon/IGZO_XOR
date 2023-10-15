@@ -716,15 +716,21 @@ void read_scaling(int ds0, int ds1, int ds2, int ds3, int ds4, int *result)
     ADC_4 = ADC->ADC_CDR[3];  // read data on A4
     PIOB->PIO_CODR = 1 << 21; // CR
 
-    Serial.print(ADC_0 / 4);
-    Serial.print(",");
-    Serial.print(ADC_1 / 4);
-    Serial.print(",");
-    Serial.print(ADC_2 / 4);
-    Serial.print(",");
-    Serial.print(ADC_3 / 4);
-    Serial.print(",");
-    Serial.print(ADC_4 / 4);
+    // Serial.print(ADC_0 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_1 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_2 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_3 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_4 / 4);
+
+    result[0] = ADC_0 / 4; // ADC0 value
+    result[1] = ADC_1 / 4; // ADC1 value
+    result[2] = ADC_2 / 4; // ADC2 value
+    result[3] = ADC_3 / 4; // ADC3 value
+    result[4] = ADC_4 / 4; // ADC4 value
 
     //  return ADC_0;
 }
