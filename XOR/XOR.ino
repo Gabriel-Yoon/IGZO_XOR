@@ -259,28 +259,28 @@ void loop()
         layer hiddenLayer;
         layer outputLayer;
 
-        // ARRAY INITIALIZE SAVE ADC VALUE *********************************
-
+        // ARRAY INITIALIZE SAVE ADC VALUE ***************************************
+        Serial.println("ARRAY INITIALIZE SAVE ADC VALUE ****************************************");
         int cycle_num = 1; // 초기화  cycle_num = read_period;
-        /*
-        cycle_num 지정
-        if (remainder_string == "T")
-        {
-            if (update_num % read_period == 0)
-            {
-                cycle_num = read_period;
-            }
-            else
-            {
-                cycle_num = 1;
-            }
-        }
-        else
-        {
-            cycle_num = 1;
-        }
-        */
-
+                           /*
+                           cycle_num 지정
+                           if (remainder_string == "T")
+                           {
+                               if (update_num % read_period == 0)
+                               {
+                                   cycle_num = read_period;
+                               }
+                               else
+                               {
+                                   cycle_num = 1;
+                               }
+                           }
+                           else
+                           {
+                               cycle_num = 1;
+                           }
+                           */
+        Serial.println("0. ADC ZEROING ---------------------------------------------------------");
         // 0. ADC ZEROING --------------------------------------------------------
         /*
         Condition Palette ===================
@@ -333,13 +333,14 @@ void loop()
         // 0-3. Read at the very last moment. No need to check during zeroing process!
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
-            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum);
+            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
         }
 
         delay(50);
-        // 0. ---------------------------------------------------- ADC ZEROING END
-
-        // 1. ADC MIN, MAX VALUE EXTRACTION --------------------------------------
+        // -------------------------------------------------------- ADC ZEROING END
+        Serial.println("-------------------------------------------------------- ADC ZEROING END");
+        // 1. ADC MIN, MAX VALUE EXTRACTION ---------------------------------------
+        Serial.println("1. ADC MIN, MAX VALUE EXTRACTION ---------------------------------------");
         /*
         Condition Palette ===================
         pulseWidth           5 microsec
@@ -376,22 +377,22 @@ void loop()
                     for (int k = 0; k < updateNum; k++)
                     {
                         Potentiation_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
-                        if ((k + 1) % readPeriod == j)
-                        {
-                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-                        }
                     }
+                    // Read the potentiation peak
+                    Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                    core.setADCmaxValue(rowNum);
+
                     for (int k = 0; k < updateNum; k++)
                     {
                         Depression_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
-                        if ((k + 1) % readPeriod == j)
-                        {
-                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-                        }
                     }
+                    // Read the depression peak
+                    Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                    core.setADCminValue(rowNum);
                 }
             }
 
+            // Zeroing
             // Condition Setup
             pulseWidth = 0;
             preEnableTime = 1;
@@ -404,8 +405,7 @@ void loop()
             readSetTime = 1;
             updateNum = 3000;
 
-            // Zeroing
-            // 0-2. Potentiation and Depression to Zero
+            // Potentiation and Depression to Zero
             for (int i = 0; i < setNum; i++)
             {
                 for (int j = 0; j < cycle_num; j++)
@@ -423,9 +423,10 @@ void loop()
         }
         delay(50);
 
-        // 1. ----------------------------------- ADC MIN, MAX VALUE EXTRACTION END
-
-        // 2. ADC ZERO VALUE EXTRACTION ------------------------------------------
+        // -------------------------------------- ADC MIN, MAX VALUE EXTRACTION END
+        Serial.println("-------------------------------------- ADC MIN, MAX VALUE EXTRACTION END");
+        // 2. ADC ZERO VALUE EXTRACTION -------------------------------------------
+        Serial.println("2. ADC ZERO VALUE EXTRACTION -------------------------------------------");
         /*
         Condition Palette ===================
         pulseWidth           0 microsec
@@ -440,346 +441,56 @@ void loop()
         update_num           1000
         =============== Condition Palette END
         */
-
-        for (int i = 0; i < setNum; i++)
+        for (int rowNum = 0; rowNum < 5; rowNum++)
         {
-            for (int j = 0; j < cycle_num; j++)
+            for (int i = 0; i < setNum; i++)
             {
-                for (int k = 0; k < updateNum; k++)
+                for (int j = 0; j < cycle_num; j++)
                 {
-                    for (int rowNum = 0; rowNum < 5; rowNum++)
+                    for (int k = 0; k < updateNum; k++)
                     {
-                        Potentiation_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
-                    }
+                        for (int rowNum = 0; rowNum < 5; rowNum++)
+                        {
+                            Potentiation_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
+                        }
 
-                    if ((k + 1) % readPeriod == j)
-                    {
-                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                        if ((k + 1) % readPeriod == j)
+                        {
+                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                        }
                     }
-                }
-                for (int k = 0; k < updateNum; k++)
-                {
-                    for (int rowNum = 0; rowNum < 5; rowNum++)
+                    for (int k = 0; k < updateNum; k++)
                     {
-                        Depression_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
-                    }
-                    if ((k + 1) % readPeriod == j)
-                    {
-                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                        for (int rowNum = 0; rowNum < 5; rowNum++)
+                        {
+                            Depression_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
+                        }
+                        if ((k + 1) % readPeriod == j)
+                        {
+                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                        }
                     }
                 }
             }
         }
+
+        for (int rowNum = 0; rowNum < 5; rowNum++)
+        {
+            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+            core.setADCmidValue(rowNum);
+        }
+
         delay(50);
 
         // 2. --------------------------------------- ADC ZERO VALUE EXTRACTION END
-        // 2-1. Condition Setup
-        pulseWidth = 0;
-        preEnableTime = 1;
-        postEnableTime = 1;
-        setNum = 10;
-        readPeriod = 1000;
-        zeroTime = 1;
-        readDelay = 1;
-        readTime = 2;
-        readSetTime = 1;
-        updateNum = 3000;
-
-        // 2-2. Potentiation and Depression to Zero
-        for (int i = 0; i < setNum; i++)
-        {
-            for (int j = 0; j < cycle_num; j++)
-            {
-                for (int k = 0; k < updateNum; k++)
-                {
-                    for (int rowNum = 0; rowNum < 5; rowNum++)
-                    {
-                        Potentiation_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
-                    }
-                }
-                for (int k = 0; k < updateNum; k++)
-                {
-                    for (int rowNum = 0; rowNum < 5; rowNum++)
-                    {
-                        Depression_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
-                    }
-                }
-            }
-        }
-
-        // 2-3. Read at the very last moment. No need to check during zeroing process!
-        for (int rowNum = 0; rowNum < 5; rowNum++)
-        {
-            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum);
-        }
-        delay(50);
+        Serial.println("2. --------------------------------------- ADC ZERO VALUE EXTRACTION END");
         // ************************************ ARRAY INITIALIZE SAVE ADC VALUE END
-
-        // XOR PROBLEM SOLVING ****************************************************
-        // EPOCH ---------------------------------------------------------
-        for (int i = 0; i < epoch; i++)
-        {
-            Serial.println("// ---------------------------------------------------------");
-            Serial.print("epoch = ");
-            Serial.println(i + 1);
-
-            // XOR Problem Scheme
-            /* Feed-Forward 1
-
-                    X0=> WL0--  **     **
-
-                    X1=> WL1--  **     **
-
-                    X2=> WL2--  **     **       ##
-
-                         WL3--                  ##
-
-                         WL4--                  ##
-
-                                |      |       |       |       |
-                                adc0    adc1    adc2    adc3    adc4
-                                h0      h1
-            */
-
-            /* Feed-Forward 2
-
-                         WL0--
-
-                         WL1--
-
-            b2 (bias) => WL2--                  (2,2)
-            hiddenLayer
-            Value[0]  => WL3--                  (2,3)                   q3
-            hiddenLayer
-            Value[1]  => WL4--                  (2,4)                   q4
-
-                                |      |       |       |       |
-                                adc0    adc1    adc2    adc3    adc4
-                                                outputLayer
-                                                Value[0]
-            */
-
-            // Feed-Forward 1 : Visible -> Hidden Layer ----------------------------
-            X[0] = rand() % 2;
-            X[1] = rand() % 2;
-            X[2] = 1;
-            X[3] = 0;
-            X[4] = 0;
-
-            for (int i = 0; i < 5; i++)
-            {
-                pulseWidthWL[i] = pulseWidth;
-            }
-
-            X0_real = (X[0] == 0) ? 0 : 1; // WL0 = round(6200 * X0_real);
-            X1_real = (X[1] == 0) ? 0 : 1; // WL1 = round(6200 * X1_real);
-
-            target = X0_real ^ X1_real;
-            target_real = (target == 0) ? 0.25 : 0.75;
-
-            // N1, N3 line pulse occurence probability
-            q[0] = X0_real;
-            q[1] = X1_real;
-            q[2] = X[2];
-
-            Feedforward(X, pulseWidthWL, core);
-            hiddenLayer = calculateLayerValues(X, core);
-            // calculateLayerValues(X, core, hiddenLayer);
-
-            // Feed-Forward 2 : Hidden -> Output Layer ----------------------------
-            X[0] = 0;
-            X[1] = 0;
-            X[2] = 1;
-            X[3] = hiddenLayer.activationValue[0]; // h0
-            X[4] = hiddenLayer.activationValue[1]; // h1
-
-            PRINTER(X[3]);
-            PRINTER(X[4]);
-
-            for (int i = 0; i < 5; i++)
-            {
-                pulseWidthWL[i] = read_set_time;
-            }
-
-            // N1, N3 line pulse occurence probability
-            q[3] = X[3];
-            q[4] = X[4];
-
-            Feedforward(X, pulseWidthWL, core);
-            outputLayer = calculateLayerValues(X, core);
-            // calculateLayerValues(X, core, outputLayer);
-
-            // Back Propagation 1--------------------------------------------------
-            /*
-                    adc0 --
-
-                    adc1 --
-
-                    adc2 --                  **(2,2)
-
-                    adc3 --                  **(2,3)
-                    b3
-                    adc4 --                  **(2,4)
-                    b4
-                                |      |       |       |       |
-                                Y[0]    Y[1]    Y[2]    Y[3]    Y[4]
-                                                BP_outputLayer
-            */
-
-            /*
-                Gradient Descent : Chain rule
-
-            E       = 1/2 * (target - output)^2
-
-            dE/dw   = dE/d_output       * d_output/d_input      * d_input/dw
-                    = -(target-output)  * output * (1-output)   * last_value of sigmoid output
-                    = error             * output * (1-output)   * last_value of sigmoid output
-            */
-
-            // BackPropagation: Hidden Layer
-            // Y_hat = outputLayer.activationValue[0]
-            // Y = target_real
-
-            // BackPropagation: Input Layer
-
-            // Calculate error
-            error = outputLayer.activationValue[0] - target_real; // (y-t) value
-            double Error = 0.5 * error * error;
-            loss = 100 * error * error;
-            Serial.print("loss  = ");
-            Serial.println(loss);
-            ErrorEpochRecorder[epoch] = loss;
-
-            PRINTER(outputLayer.activationValue[0]);
-
-            // Multiply amplification_factor for the value to be inside ADC(0~1023 10bit) range
-            double BP_outputLayer = error * (outputLayer.activationValue[0]) * (1 - outputLayer.activationValue[0]) * amplification_factor;
-            // 앞서 정의된 BP_outputLayer의 값에서 소자의 값을 반영한 특정값을 곱해준 만큼 역전(backpropagation)을 시켜줌(특정값은 feedforward 과정에서 곱해준 일정한 상수와 일치를 시켜주어야 한다)
-            PRINTER(BP_outputLayer);
-
-            Y[0] = 0;
-            Y[1] = 0;
-            Y[2] = abs(BP_outputLayer);
-            Y[3] = 0;
-            Y[4] = 0;
-
-            for (int i = 0; i < 5; i++)
-            {
-                pulseWidthWL[i] = read_set_time;
-            }
-
-            Backpropagation(Y, pulseWidthWL, core);
-            layer hiddenLayerBackProp;
-            hiddenLayerBackProp = calculateLayerValues(Y, core);
-            // calculateLayerValues(Y, core, hiddenLayerBackProp);
-
-            // Weight Update 1 : Output -> Hidden Layer ----------------------------
-            /* Weight Update
-
-                    Q[0] --
-
-                    Q[1] --
-
-                    Q[2] --                  **(2,2)
-
-                    Q[3] --                  **(2,3)
-
-                    Q[4] --                  **(2,4)
-
-                                |      |       |       |       |
-                                P[0]    P[1]    P[2]    P[3]    P[4]
-
-            */
-
-            learning_rate_partial = sqrt(learning_rate);
-
-            p[2] = error * (outputLayer.activationValue[0]) * (1 - outputLayer.activationValue[0]);
-
-            P[0] = 0;
-            P[1] = 0;
-            P[2] = round(6 * learning_rate_partial * 100000 * p[2]);
-            P[3] = 0;
-            P[4] = 0;
-
-            Q[0] = 0;
-            Q[1] = 0;
-            Q[2] = round(0.1667 * learning_rate_partial * 100000 * q[2]);
-            Q[3] = round(learning_rate_partial * 100000 * q[3]);
-            Q[4] = round(learning_rate_partial * 100000 * q[4]);
-
-            if (P[2] < 0)
-            {
-                SGDsetRegisterPotentiation(pulseWidth, preEnableTime, postEnableTime, zeroTime);
-            }
-            else
-            {
-                SGDsetRegisterDepression(pulseWidth, preEnableTime, postEnableTime, zeroTime);
-            }
-
-            // Weight Update 2 : Hidden -> Visible Layer -----------------------------
-            /*
-
-                    Q[0] --     **      **
-
-                    Q[1] --     **      **
-
-                    Q[2] --     **      **
-
-                    Q[3] --
-
-                    Q[4] --
-
-                                |      |       |       |       |
-                                P[0]    P[1]    P[2]    P[3]    P[4]
-                FeedForward     X[3]    X[4]
-                BackPropagation b3      b4     : from Y[2]
-            */
-
-            b3 = (32 * (double(core._ADCvalue[3]) - double(Y[2]) * double((core._mid[2][3])))) / (double(core._standard[3][max_val]) - double(core._standard[3][min_val])); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
-            b4 = (32 * (double(core._ADCvalue[4]) - double(Y[2]) * double((core._mid[2][4])))) / (double(core._standard[4][max_val]) - double(core._standard[4][min_val])); // 이 값은 -Output_b1 ~ Output_b1의 값을 가지며, amplification factor가 곱해진 P 펄스 발생 확률과 연관이 됨
-
-            p[0] = double(b3) * X[3] * (1 - X[3]) / double(amplification_factor);
-            p[0] = (error >= 0) ? p[0] : -p[0];
-            // Error 가 (-) = p[0] value (-) =  Potentiation 필요 = N2 value (+) = N4 value (-)
-            p[1] = double(b4) * X[4] * (1 - X[4]) / double(amplification_factor);
-            p[1] = (error >= 0) ? p[1] : -p[1];
-
-            P[0] = round(12 * learning_rate_partial * 100000 * p[0]);
-            P[1] = round(12 * learning_rate_partial * 100000 * p[1]);
-            P[2] = 0;
-            P[3] = 0;
-            P[4] = 0;
-
-            Q[0] = round(0.1667 * learning_rate_partial * 100000 * q[0]);
-            Q[1] = round(0.1667 * learning_rate_partial * 100000 * q[1]);
-            Q[2] = round(0.1667 * learning_rate_partial * 100000 * q[2]);
-            Q[3] = 0;
-            Q[4] = 0;
-
-            // Why is there (-) on P[0] or P[1] on N2 - Potentiation and N4 - Depression
-
-            for (int i = 0; i < Bit_length; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    N1[j][i] = ((rand() % 100000) + 1 <= Q[j]) ? 1 : 0; // j = 0, 1, 2, 3, 4 only
-                }
-                N2[0][i] = ((rand() % 100000) + 1 <= -P[0]) ? 1 : 0;
-                N2[1][i] = ((rand() % 100000) + 1 <= -P[1]) ? 1 : 0;
-            }
-            Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
-
-            for (int i = 0; i < Bit_length; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    N3[j][i] = ((rand() % 100000) + 1 <= Q[j]) ? 1 : 0; // j = 0, 1, 2, 3, 4 only
-                }
-                N4[0][i] = ((rand() % 100000) + 1 <= -P[0]) ? 1 : 0;
-                N4[1][i] = ((rand() % 100000) + 1 <= -P[1]) ? 1 : 0;
-            }
-            Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
-        }
+        Serial.println("************************************ ARRAY INITIALIZE SAVE ADC VALUE END");
+
+        Serial.println("RESULT BELOW");
+        printADCminValue(core);
+        printADCmaxValue(core);
+        printADCmidValue(core);
     }
 }
 //**************************************************************************************************************//
@@ -1152,101 +863,6 @@ void Read_operation_forward_6T(int readTime, int readSetTime, int readDelay, int
     delayMicroseconds(readSetTime);
     read_scaling_single(readTime, readDelay, rowNum, arg_core);
     PIOC->PIO_CODR = n1; // N1 Clear
-
-    /*
-
-    if (read_function == "N5")
-    { // N5 only
-        // Serial.print("N5 - ");
-        PIOB->PIO_CODR = 1 << 26;
-        PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
-
-        PIOC->PIO_SODR = n3; // N3 SET
-        delayMicroseconds(read_set_time);
-        Read_scaling(read_time, read_delay, row_num, extra1);
-        PIOC->PIO_CODR = n3; // N3 Clear
-    }
-    else if (read_function == "N6")
-    { // N6 only
-        // Serial.print("N6 - ");
-        PIOB->PIO_CODR = 1 << 26;
-        PIOB->PIO_SODR = 1 << 25; // digitalWrite(HL_CHOP,HIGH)
-
-        PIOC->PIO_SODR = n1; // N1 SET
-        delayMicroseconds(read_set_time);
-        Read_scaling(read_time, read_delay, row_num, extra1);
-        PIOC->PIO_CODR = n1; // N1 Clear
-    }
-    else if (read_function == "N56")
-    { // N5 and then N6
-        // Serial.print("N5 - ");
-        PIOB->PIO_CODR = 1 << 26;
-        PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
-
-        PIOC->PIO_SODR = n3; // N3 SET
-        delayMicroseconds(read_set_time);
-        Read_scaling(read_time, read_delay, row_num, extra1);
-        PIOC->PIO_CODR = n3; // N3 Clear
-        Serial.print(",");
-
-        delayMicroseconds(20); // to separate N5 / N6 reads
-
-        // Serial.print("N6 - ");
-        PIOB->PIO_CODR = 1 << 26;
-        PIOB->PIO_SODR = 1 << 25; // digitalWrite(HL_CHOP,HIGH)
-
-        PIOC->PIO_SODR = n1; // N1 SET
-        delayMicroseconds(read_set_time);
-        Read_scaling(read_time, read_delay, row_num, extra1);
-        PIOC->PIO_CODR = n1; // N1 Clear
-    }
-    else if (read_function == "N65")
-    { // N6 and then N5
-        PIOB->PIO_CODR = 1 << 26;
-        PIOB->PIO_SODR = 1 << 25; // digitalWrite(HL_CHOP,HIGH)
-
-        PIOC->PIO_SODR = n1; // N1 SET
-        delayMicroseconds(read_set_time);
-        Read_scaling(read_time, read_delay, row_num, extra1);
-        PIOC->PIO_CODR = n1; // N1 Clear
-        Serial.print(",");
-
-        delayMicroseconds(20); // to separate N5 / N6 reads
-
-        PIOB->PIO_CODR = 1 << 26;
-        PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
-
-        PIOC->PIO_SODR = n3; // N3 SET
-        delayMicroseconds(read_set_time);
-        Read_scaling(read_time, read_delay, row_num, extra1);
-        PIOC->PIO_CODR = n3; // N3 Clear
-    }
-
-    */
-
-    // Obsolete
-    /*
-  else if (read_function == "N5C") {
-
-    PIOB->PIO_CODR = 1 << 26;
-    PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
-
-    int n3 = (1 << 17) | (1 << 18) | (1 << 19) | (1 << 9) | (1 << 8);
-    PIOC->PIO_SODR = n3; //N3 SET
-    delayMicroseconds(read_set_time);
-    Read_scaling(read_time, read_delay);
-  }
-  else if (read_function == "N6C") {
-
-    PIOB->PIO_CODR = 1 << 26;
-    PIOB->PIO_SODR = 1 << 25; // digitalWrite(HL_CHOP,HIGH)
-
-    int n1 = (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16);
-    PIOC->PIO_SODR = n1; //N1 SET
-    delayMicroseconds(read_set_time);
-    Read_scaling(read_time, read_delay);
-  }
-  */
 }
 
 void Potentiation_6T(int pulse_width, int pre_enable_time, int post_enable_time, int zero_time, int row_num)
@@ -1676,4 +1292,52 @@ void printer(char *name, double value)
     Serial.print(" value: ");
     Serial.print(value);
     Serial.println("");
+}
+
+void printADCminValue(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC min value print");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._min[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+    Serial.println("-------------------");
+}
+
+void printADCmaxValue(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC max value print");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._max[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+    Serial.println("-------------------");
+}
+
+void printADCmidValue(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC mid value print");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._mid[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+    Serial.println("-------------------");
 }
