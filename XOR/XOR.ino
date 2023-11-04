@@ -474,7 +474,7 @@ void loop()
         pulseWidth = 0;
         preEnableTime = 1;
         postEnableTime = 1;
-        setNum = 10;
+        setNum = 20;
         readPeriod = 1000;
         zeroTime = 1;
         readDelay = 1;
@@ -519,6 +519,18 @@ void loop()
 
         // 3. GROUNDING TEST ------------------------------------------------------
         Serial.println("3. GROUNDING TEST ------------------------------------------------------");
+
+        // Condition Setup
+        pulseWidth = 1;
+        preEnableTime = 1;
+        postEnableTime = 1;
+        setNum = 10;
+        readPeriod = 1000;
+        zeroTime = 1;
+        readDelay = 1;
+        readTime = 2;
+        readSetTime = 1;
+        updateNum = 1000;
 
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
