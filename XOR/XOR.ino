@@ -197,10 +197,6 @@ void loop()
         }
     }
 
-    std::filesystem::path CurrentPath = std::filesystem::current_path();
-    const std::string initial_weight = "initial_weight.txt";
-    const std::string target_weight = "target_weight.txt";
-
     if (Serial.available() > 0)
     {
         // SERIAL INPUT ******************************************************
