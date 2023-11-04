@@ -3,9 +3,9 @@
 
 #include <vector>
 #include <math.h>
-#include <iostream>
-#include <sstream>
-#include <fstream> //ofstream
+// #include <iostream>
+// #include <sstream>
+// #include <fstream> //ofstream
 // #include <Arduino.h>
 
 #define MAX 300
