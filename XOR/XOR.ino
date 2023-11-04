@@ -535,7 +535,7 @@ void loop()
         Serial.println("RESULT BELOW");
         printADCminValue(core);
         printADCmaxValue(core);
-        printADCmidValue(core);
+        printADCgndValue(core);
     }
 }
 //**************************************************************************************************************//
@@ -1147,6 +1147,22 @@ void printADCmidValue(synapseArray5by5 &arg_core)
         for (int j = 0; j < 5; j++)
         {
             Serial.print(arg_core._mid[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+    Serial.println("-------------------");
+}
+
+void printADCgndValue(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC GND value print");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._gnd[i][j]);
             Serial.print(" ");
         }
         Serial.println(" ");
