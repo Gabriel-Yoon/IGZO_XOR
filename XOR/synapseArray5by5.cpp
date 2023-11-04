@@ -34,25 +34,33 @@ void synapseArray5by5::setWLPulseWidth(int &WL0, int &WL1, int &WL2, int &WL3, i
     this->_WL[4] = WL4;
 }
 //--------------------------------------------------------------
-void synapseArray5by5::setADCvalueN5(int ADC_0, int ADC_1, int ADC_2, int ADC_3, int ADC_4)
+void synapseArray5by5::setADCvalueTemp(int ADC_0, int ADC_1, int ADC_2, int ADC_3, int ADC_4)
 {
-    this->_ADCvalueN5[0] = ADC_0;
-    this->_ADCvalueN5[1] = ADC_1;
-    this->_ADCvalueN5[2] = ADC_2;
-    this->_ADCvalueN5[3] = ADC_3;
-    this->_ADCvalueN5[4] = ADC_4;
+    this->_ADCvalueTemp[0] = ADC_0;
+    this->_ADCvalueTemp[1] = ADC_1;
+    this->_ADCvalueTemp[2] = ADC_2;
+    this->_ADCvalueTemp[3] = ADC_3;
+    this->_ADCvalueTemp[4] = ADC_4;
+}
+void synapseArray5by5::setADCvalueN5()
+{
+    this->_ADCvalueN5[0] = this->_ADCvalueTemp[0];
+    this->_ADCvalueN5[1] = this->_ADCvalueTemp[1];
+    this->_ADCvalueN5[2] = this->_ADCvalueTemp[2];
+    this->_ADCvalueN5[3] = this->_ADCvalueTemp[3];
+    this->_ADCvalueN5[4] = this->_ADCvalueTemp[4];
 }
 //--------------------------------------------------------------
-void synapseArray5by5::setADCvalueN6(int ADC_0, int ADC_1, int ADC_2, int ADC_3, int ADC_4)
+void synapseArray5by5::setADCvalueN6()
 {
-    this->_ADCvalueN6[0] = ADC_0;
-    this->_ADCvalueN6[1] = ADC_1;
-    this->_ADCvalueN6[2] = ADC_2;
-    this->_ADCvalueN6[3] = ADC_3;
-    this->_ADCvalueN6[4] = ADC_4;
+    this->_ADCvalueN6[0] = this->_ADCvalueTemp[0];
+    this->_ADCvalueN6[1] = this->_ADCvalueTemp[1];
+    this->_ADCvalueN6[2] = this->_ADCvalueTemp[2];
+    this->_ADCvalueN6[3] = this->_ADCvalueTemp[3];
+    this->_ADCvalueN6[4] = this->_ADCvalueTemp[4];
 }
 //--------------------------------------------------------------
-void synapseArray5by5::setADCvalueN5N6(int ADC_0, int ADC_1, int ADC_2, int ADC_3, int ADC_4)
+void synapseArray5by5::setADCvalueN5N6()
 {
     for (int i = 0; i < 5; i++)
     {
