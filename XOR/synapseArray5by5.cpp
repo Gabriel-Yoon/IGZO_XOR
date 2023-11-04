@@ -25,26 +25,6 @@ synapseArray5by5::~synapseArray5by5()
 {
 }
 //--------------------------------------------------------------
-void synapseArray5by5::setInitialWeight(const std::string &file_path)
-{
-    // std::ifstream file(file_path);
-    // if (file)
-    // {
-    //     std::string line;
-    //     while (std::getline(file, line))
-    //     {
-    //         std::vector<double> row;
-    //         std::istringstream iss(line);
-    //         double value;
-    //         while (iss >> value)
-    //         {
-    //             row.push_back(value);
-    //         }
-    //         initialWeight.push_back(row);
-    //     }
-    // }
-}
-//--------------------------------------------------------------
 void synapseArray5by5::setWLPulseWidth(int &WL0, int &WL1, int &WL2, int &WL3, int &WL4)
 {
     this->_WL[0] = WL0;
