@@ -717,7 +717,7 @@ void read_scaling_single(int read_time, int read_delay, int read_row, synapseArr
     // Serial.print(",");
     // Serial.print(ADC_4 / 4);
 
-    arg_core.setADCvalueTemp(ADC_0 / 4, ADC_0 / 4, ADC_0 / 4, ADC_0 / 4, ADC_0 / 4);
+    arg_core.setADCvalueTemp(ADC_0 / 4, ADC_1 / 4, ADC_2 / 4, ADC_3 / 4, ADC_4 / 4);
     //  return ADC_0;
 }
 
@@ -758,7 +758,7 @@ void Read_operation_forward_6T(int readTime, int readSetTime, int readDelay, int
     PIOC->PIO_SODR = n3; // N3 SET
     delayMicroseconds(readSetTime);
     read_scaling_single(readTime, readDelay, rowNum, arg_core);
-    core.setADCvalueN5();
+    arg_core.setADCvalueN5();
     PIOC->PIO_CODR = n3; // N3 Clear
 
     delayMicroseconds(20); // to separate N5 / N6 reads
@@ -768,10 +768,10 @@ void Read_operation_forward_6T(int readTime, int readSetTime, int readDelay, int
     PIOC->PIO_SODR = n1; // N1 SET
     delayMicroseconds(readSetTime);
     read_scaling_single(readTime, readDelay, rowNum, arg_core);
-    core.setADCvalueN6();
+    arg_core.setADCvalueN6();
     PIOC->PIO_CODR = n1; // N1 Clear
 
-    core.setADCvalueN5N6();
+    arg_core.setADCvalueN5N6();
 }
 
 void Potentiation_6T(int pulse_width, int pre_enable_time, int post_enable_time, int zero_time, int row_num)
