@@ -478,7 +478,7 @@ void loop()
         delay(50);
 
         // 2. --------------------------------------- ADC ZERO VALUE EXTRACTION END
-        Serial.println("2. --------------------------------------- ADC ZERO VALUE EXTRACTION END");
+        Serial.println("------------------------------------------ ADC ZERO VALUE EXTRACTION END");
         // ************************************ ARRAY INITIALIZE SAVE ADC VALUE END
         Serial.println("************************************ ARRAY INITIALIZE SAVE ADC VALUE END");
 
@@ -702,6 +702,16 @@ void read_scaling_single(int read_time, int read_delay, int read_row, synapseArr
     ADC_3 = ADC->ADC_CDR[4];  // read data on A3
     ADC_4 = ADC->ADC_CDR[3];  // read data on A4
     PIOB->PIO_CODR = 1 << 21; // CR
+
+    Serial.print(ADC_0 / 4);
+    Serial.print(",");
+    Serial.print(ADC_1 / 4);
+    Serial.print(",");
+    Serial.print(ADC_2 / 4);
+    Serial.print(",");
+    Serial.print(ADC_3 / 4);
+    Serial.print(",");
+    Serial.print(ADC_4 / 4);
 
     arg_core.setADCvalueN5N6(ADC_0 / 4, ADC_0 / 4, ADC_0 / 4, ADC_0 / 4, ADC_0 / 4);
     //  return ADC_0;
