@@ -275,8 +275,9 @@ void loop()
                                cycle_num = 1;
                            }
                            */
-        Serial.println("0. ADC ZEROING ---------------------------------------------------------");
+
         // 0. ADC ZEROING --------------------------------------------------------
+        Serial.println("0. ADC ZEROING ---------------------------------------------------------");
         /*
         Condition Palette ===================
         pulseWidth           0 microsec
@@ -332,8 +333,9 @@ void loop()
         }
 
         delay(50);
-        // -------------------------------------------------------- ADC ZEROING END
         Serial.println("-------------------------------------------------------- ADC ZEROING END");
+        // -------------------------------------------------------- ADC ZEROING END
+
         // 1. ADC MIN, MAX VALUE EXTRACTION ---------------------------------------
         Serial.println("1. ADC MIN, MAX VALUE EXTRACTION ---------------------------------------");
         /*
@@ -448,8 +450,9 @@ void loop()
         }
         delay(50);
 
-        // -------------------------------------- ADC MIN, MAX VALUE EXTRACTION END
         Serial.println("-------------------------------------- ADC MIN, MAX VALUE EXTRACTION END");
+        // -------------------------------------- ADC MIN, MAX VALUE EXTRACTION END
+
         // 2. ADC ZERO VALUE EXTRACTION -------------------------------------------
         Serial.println("2. ADC ZERO VALUE EXTRACTION -------------------------------------------");
         /*
@@ -511,10 +514,23 @@ void loop()
 
         delay(50);
 
-        // 2. --------------------------------------- ADC ZERO VALUE EXTRACTION END
         Serial.println("------------------------------------------ ADC ZERO VALUE EXTRACTION END");
-        // ************************************ ARRAY INITIALIZE SAVE ADC VALUE END
+        // 2. --------------------------------------- ADC ZERO VALUE EXTRACTION END
+
+        // 3. GROUNDING TEST ------------------------------------------------------
+        Serial.println("3. GROUNDING TEST ------------------------------------------------------");
+
+        for (int rowNum = 0; rowNum < 5; rowNum++)
+        {
+            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+            core.setADCgndValue(rowNum);
+        }
+
+        Serial.println("----------------------------------------------------- GROUNDING TEST END");
+        // ----------------------------------------------------- GROUNDING TEST END
+
         Serial.println("************************************ ARRAY INITIALIZE SAVE ADC VALUE END");
+        // ************************************ ARRAY INITIALIZE SAVE ADC VALUE END
 
         Serial.println("RESULT BELOW");
         printADCminValue(core);
@@ -749,6 +765,34 @@ void read_scaling_single(int read_time, int read_delay, int read_row, synapseArr
 
     arg_core.setADCvalueTemp(ADC_0 / 4, ADC_1 / 4, ADC_2 / 4, ADC_3 / 4, ADC_4 / 4);
     //  return ADC_0;
+}
+
+void GroundAllCells(int readTime, int readSetTime, int readDelay, int rowNum, synapseArray5by5 &arg_core)
+{
+    int n1;
+    int n2;
+    n1 = (1 << 12); // row number 0
+    n1 = (1 << 13); // row number 1
+    n1 = (1 << 14); // row number 2
+    n1 = (1 << 15); // row number 3
+    n1 = (1 << 16); // row number 4
+
+    n2 = (1 << 7); // column number 0
+    n2 = (1 << 6); // column number 1
+    n2 = (1 << 5); // column number 2
+    n2 = (1 << 4); // column number 3
+    n2 = (1 << 3); // column number 4
+
+    PIOB->PIO_CODR = 1 << 26; // digitalWrite(FB,LOW)
+    PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
+    PIOA->PIO_CODR = 1 << 20; // VH VDDHAFL1
+    PIOC->PIO_SODR = n1;      // N1 ON
+    PIOC->PIO_SODR = n2;      // N2 ON
+    delay(10);                // Ground Capacitor for 10 milisec
+    PIOC->PIO_CODR = 1 << 2;  // N1 clear
+    PIOC->PIO_CODR = 1 << 7;  // N2 clear
+    Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, arg_core);
+    delay(50);
 }
 
 void Read_operation_forward_6T(int readTime, int readSetTime, int readDelay, int rowNum, synapseArray5by5 &arg_core)

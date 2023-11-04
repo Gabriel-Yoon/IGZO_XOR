@@ -27,6 +27,7 @@ public:
     int _min[5][5];
     int _mid[5][5];
     int _max[5][5];
+    int _gnd[5][5];
 
     // input
     int _WL[5];
@@ -65,6 +66,7 @@ public:
     void setADCminValue(int rowNum);
     void setADCmidValue(int rowNum);
     void setADCmaxValue(int rowNum);
+    void setADCgndValue(int rowNum);
 };
 //**************************************************************************************************************//
 #endif

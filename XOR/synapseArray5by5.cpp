@@ -91,3 +91,11 @@ void synapseArray5by5::setADCmaxValue(int rowNum)
         this->_max[rowNum][i] = this->_ADCvalueN5N6[i];
     }
 }
+//--------------------------------------------------------------
+void synapseArray5by5::setADCgndValue(int rowNum)
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->_gnd[rowNum][i] = this->_ADCvalueN5N6[i];
+    }
+}
