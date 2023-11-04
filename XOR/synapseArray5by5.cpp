@@ -70,6 +70,7 @@ void synapseArray5by5::setADCvalueN5N6()
 //--------------------------------------------------------------
 void synapseArray5by5::setADCminValue(int rowNum)
 {
+    setADCvalueN5N6();
     for (int i = 0; i < 5; i++)
     {
         this->_min[rowNum][i] = this->_ADCvalueN5N6[i];
