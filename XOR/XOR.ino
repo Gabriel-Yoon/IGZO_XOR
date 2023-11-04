@@ -522,7 +522,7 @@ void loop()
 
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
-            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+            GroundAllCells(readTime, readSetTime, readDelay, rowNum, core);
             core.setADCgndValue(rowNum);
         }
 
@@ -535,6 +535,7 @@ void loop()
         Serial.println("RESULT BELOW");
         printADCminValue(core);
         printADCmaxValue(core);
+        printADCmidValue(core);
         printADCgndValue(core);
     }
 }
@@ -783,12 +784,11 @@ void GroundAllCells(int readTime, int readSetTime, int readDelay, int rowNum, sy
     n2 = (1 << 4); // column number 3
     n2 = (1 << 3); // column number 4
 
-    PIOB->PIO_CODR = 1 << 26; // digitalWrite(FB,LOW)
-    PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
+    state_switch(1);
     PIOA->PIO_CODR = 1 << 20; // VH VDDHAFL1
     PIOC->PIO_SODR = n1;      // N1 ON
     PIOC->PIO_SODR = n2;      // N2 ON
-    delay(1000);              // Ground Capacitor for 1000 milisec
+    delay(10);                // Ground Capacitor for 10 milisec
     PIOC->PIO_CODR = 1 << 2;  // N1 clear
     PIOC->PIO_CODR = 1 << 7;  // N2 clear
     Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, arg_core);
