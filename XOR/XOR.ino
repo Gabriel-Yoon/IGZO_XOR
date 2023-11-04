@@ -352,6 +352,36 @@ void loop()
         */
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
+            // 0. Zeroing
+            // Condition Setup
+            pulseWidth = 0;
+            preEnableTime = 1;
+            postEnableTime = 1;
+            setNum = 10;
+            readPeriod = 1000;
+            zeroTime = 1;
+            readDelay = 1;
+            readTime = 2;
+            readSetTime = 1;
+            updateNum = 3000;
+
+            // Potentiation and Depression to Zero
+            for (int i = 0; i < setNum; i++)
+            {
+                for (int j = 0; j < cycle_num; j++)
+                {
+                    for (int k = 0; k < updateNum; k++)
+                    {
+                        Potentiation_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
+                    }
+                    for (int k = 0; k < updateNum; k++)
+                    {
+                        Depression_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
+                    }
+                }
+            }
+
+            // 1. Potentiation and Depression
             // Condition Setup
             pulseWidth = 5;
             preEnableTime = 1;
@@ -364,7 +394,7 @@ void loop()
             readSetTime = 1;
             updateNum = 1000;
 
-            // Potentiaion and Depression
+            // Potentiation and Depression for max and min
             for (int i = 0; i < setNum; i++)
             {
                 for (int j = 0; j < cycle_num; j++)
@@ -387,7 +417,7 @@ void loop()
                 }
             }
 
-            // Zeroing
+            // 2. Zeroing
             // Condition Setup
             pulseWidth = 0;
             preEnableTime = 1;
@@ -447,7 +477,7 @@ void loop()
         readDelay = 1;
         readTime = 2;
         readSetTime = 1;
-        updateNum = 1000;
+        updateNum = 3000;
 
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
