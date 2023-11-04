@@ -253,6 +253,7 @@ void loop()
 
         // ****************************************************** SERIAL END
 
+        synapseArray5by5 _core;
         // XOR Problem Scheme
         layer inputLayer;
         layer hiddenLayer;
@@ -377,7 +378,7 @@ void loop()
                         Potentiation_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
                         if ((k + 1) % readPeriod == j)
                         {
-                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum);
+                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
                         }
                     }
                     for (int k = 0; k < updateNum; k++)
@@ -385,7 +386,7 @@ void loop()
                         Depression_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
                         if ((k + 1) % readPeriod == j)
                         {
-                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum);
+                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
                         }
                     }
                 }
@@ -453,7 +454,7 @@ void loop()
 
                     if ((k + 1) % readPeriod == j)
                     {
-                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum);
+                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
                     }
                 }
                 for (int k = 0; k < updateNum; k++)
@@ -464,7 +465,7 @@ void loop()
                     }
                     if ((k + 1) % readPeriod == j)
                     {
-                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum);
+                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
                     }
                 }
             }
@@ -1013,7 +1014,7 @@ void read_scaling(int ds0, int ds1, int ds2, int ds3, int ds4, int *result)
     //  return ADC_0;
 }
 
-void read_scaling_single(int read_time, int read_delay, int read_row)
+void read_scaling_single(int read_time, int read_delay, int read_row, synapseArray5by5 &arg_core)
 {
     int ADC_0, ADC_1, ADC_2, ADC_3, ADC_4;
 
@@ -1100,70 +1101,56 @@ void read_scaling_single(int read_time, int read_delay, int read_row)
     ADC_4 = ADC->ADC_CDR[3];  // read data on A4
     PIOB->PIO_CODR = 1 << 21; // CR
 
-    Serial.print(ADC_0 / 4);
-    Serial.print(",");
-    Serial.print(ADC_1 / 4);
-    Serial.print(",");
-    Serial.print(ADC_2 / 4);
-    Serial.print(",");
-    Serial.print(ADC_3 / 4);
-    Serial.print(",");
-    Serial.print(ADC_4 / 4);
-
+    arg_core.setADCvalueN5N6(ADC_0 / 4, ADC_0 / 4, ADC_0 / 4, ADC_0 / 4, ADC_0 / 4);
     //  return ADC_0;
 }
 
-void Read_operation_forward_6T(int read_time, int read_set_time, int read_delay, int extra1)
+void Read_operation_forward_6T(int readTime, int readSetTime, int readDelay, int rowNum, synapseArray5by5 &arg_core)
 {
     // Serial.println("Read operation start");
     int n1;
     int n3;
     // extra1: row that you want to read
-    if (extra1 == 0)
+    if (rowNum == 0)
     {
         n1 = (1 << 12);
         n3 = (1 << 17);
     }
-    else if (extra1 == 1)
+    else if (rowNum == 1)
     {
         n1 = (1 << 13);
         n3 = (1 << 18);
     }
-    else if (extra1 == 2)
+    else if (rowNum == 2)
     {
         n1 = (1 << 14);
         n3 = (1 << 19);
     }
-    else if (extra1 == 3)
+    else if (rowNum == 3)
     {
         n1 = (1 << 15);
         n3 = (1 << 9);
     }
-    else if (extra1 == 4)
+    else if (rowNum == 4)
     {
         n1 = (1 << 16);
         n3 = (1 << 8);
     }
 
     // Use N56
-    PIOB->PIO_CODR = 1 << 26;
-    PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
-
+    state_switch(3);
     PIOC->PIO_SODR = n3; // N3 SET
-    delayMicroseconds(read_set_time);
-    Read_scaling(read_time, read_delay, row_num, extra1);
+    delayMicroseconds(readSetTime);
+    read_scaling_single(readTime, readDelay, rowNum, arg_core);
     PIOC->PIO_CODR = n3; // N3 Clear
-    Serial.print(",");
 
     delayMicroseconds(20); // to separate N5 / N6 reads
 
     // Serial.print("N6 - ");
-    PIOB->PIO_CODR = 1 << 26;
-    PIOB->PIO_SODR = 1 << 25; // digitalWrite(HL_CHOP,HIGH)
-
+    state_switch(5);
     PIOC->PIO_SODR = n1; // N1 SET
-    delayMicroseconds(read_set_time);
-    Read_scaling(read_time, read_delay, row_num, extra1);
+    delayMicroseconds(readSetTime);
+    read_scaling_single(readTime, readDelay, rowNum, arg_core);
     PIOC->PIO_CODR = n1; // N1 Clear
 
     /*
