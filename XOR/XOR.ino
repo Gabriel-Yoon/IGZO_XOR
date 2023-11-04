@@ -478,7 +478,7 @@ void loop()
         readPeriod = 1000;
         zeroTime = 1;
         readDelay = 1;
-        readTime = 2000;
+        readTime = 2;
         readSetTime = 1;
         updateNum = 3000;
 
@@ -497,7 +497,6 @@ void loop()
                 }
             }
         }
-        readTime = 2;
 
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
