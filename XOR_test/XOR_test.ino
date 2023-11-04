@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include <math.h>
 #include <cmath>
+#include <iostream>
+#include <random>
+#include <cstdlib>
+#include <ctime>
+
+#include "params.h"
+
 #undef min
 #undef max
 #include <vector>
@@ -73,12 +80,11 @@ SAM3X-Arduino Pin Mapping
 
 // FIELDS *********************************************
 
-#define MAX 120          // Read pulse set까지의 시간을 위하여
-#define Bit_length 10    // update할 때의 timing을 맞추기 위해서 따로 정의
-#define read_set_time 1  // [ms]
-#define read_delay 1     // [ms]
-#define VAR_NUM 10       // 총 Input variable 수를 정의할 것
-#define learning_rate 30 // 1st layer의 learning rate 정의
+#define MAX 120         // Read pulse set까지의 시간을 위하여
+#define Bit_length 10   // update할 때의 timing을 맞추기 위해서 따로 정의
+#define read_set_time 1 // [ms]
+#define read_delay 1    // [ms]
+#define VAR_NUM 10      // 총 Input variable 수를 정의할 것
 #define amplification_factor 8
 #define DECISION_BOUNDARY 0
 #define PRINTER(name) printer(#name, (name))
@@ -232,188 +238,9 @@ void loop()
         int zeroTime = zero_time_string.toInt();
         int epoch = epoch_string.toInt();
 
-        // XOR Problem Scheme
-        layer inputLayer;
-        layer hiddenLayer;
-        layer outputLayer;
-        Serial.println("This is a test code to examine BackPropagation");
-
-        // EPOCH ---------------------------------------------------------
-        for (int i = 0; i < epoch; i++)
-        {
-            Serial.println("// ---------------------------------------------------------");
-            Serial.print("epoch = ");
-            Serial.println(i + 1);
-
-            // XOR Problem Scheme
-            /* Feed-Forward 1
-
-                    X0=> WL0--  **     **
-
-                    X1=> WL1--  **     **
-
-                    X2=> WL2--  **     **       ##
-
-                         WL3--                  ##
-
-                         WL4--                  ##
-
-                                |      |       |       |       |
-                                adc0    adc1    adc2    adc3    adc4
-                                h0      h1
-            */
-
-            /* Feed-Forward 2
-
-                         WL0--
-
-                         WL1--
-
-            b2 (bias) => WL2--                  (2,2)
-            hiddenLayer
-            Value[0]  => WL3--                  (2,3)                   q3
-            hiddenLayer
-            Value[1]  => WL4--                  (2,4)                   q4
-
-                                |      |       |       |       |
-                                adc0    adc1    adc2    adc3    adc4
-                                                outputLayer
-                                                Value[0]
-            */
-
-            // Feed-Forward 1 : Visible -> Hidden Layer ----------------------------
-            X[0] = rand() % 2;
-            X[1] = rand() % 2;
-            X[2] = 1;
-            X[3] = 0;
-            X[4] = 0;
-
-            for (int i = 0; i < 5; i++)
-            {
-                pulseWidthWL[i] = pulseWidth;
-            }
-
-            X0_real = (X[0] == 0) ? 0 : 1; // WL0 = round(6200 * X0_real);
-            X1_real = (X[1] == 0) ? 0 : 1; // WL1 = round(6200 * X1_real);
-
-            target = X0_real ^ X1_real;
-            target_real = (target == 0) ? 0 : 1;
-
-            // N1, N3 line pulse occurence probability
-            q[0] = X0_real;
-            q[1] = X1_real;
-            q[2] = X[2];
-
-            Feedforward(X, pulseWidthWL, core);
-            hiddenLayer = calculateLayerValues(X, core);
-            // calculateLayerValues(X, core, hiddenLayer);
-
-            // Feed-Forward 2 : Hidden -> Output Layer ----------------------------
-            X[0] = 0;
-            X[1] = 0;
-            X[2] = 1;
-            X[3] = hiddenLayer.activationValue[0]; // h0
-            X[4] = hiddenLayer.activationValue[1]; // h1
-
-            PRINTER(X[3]);
-            PRINTER(X[4]);
-
-            for (int i = 0; i < 5; i++)
-            {
-                pulseWidthWL[i] = pulseWidth;
-            }
-
-            // N1, N3 line pulse occurence probability
-            q[3] = X[3];
-            q[4] = X[4];
-
-            Feedforward(X, pulseWidthWL, core);
-            outputLayer = calculateLayerValues(X, core);
-            // calculateLayerValues(X, core, outputLayer);
-
-            // Back Propagation 1--------------------------------------------------
-            /*
-                    adc0 --
-
-                    adc1 --
-
-                    adc2 --                  **(2,2)
-
-                    adc3 --                  **(2,3)
-                    b3
-                    adc4 --                  **(2,4)
-                    b4
-                                |      |       |       |       |
-                                Y[0]    Y[1]    Y[2]    Y[3]    Y[4]
-                                                BP_outputLayer
-            */
-
-            /*
-                Gradient Descent : Chain rule
-
-            E       = 1/2 * (target - output)^2
-
-            dE/dw   = dE/d_output       * d_output/d_input      * d_input/dw
-                    = -(target-output)  * output * (1-output)   * last_value of sigmoid output
-                    = error             * output * (1-output)   * last_value of sigmoid output
-            */
-
-            // BackPropagation: Hidden Layer
-            // Y_hat = outputLayer.activationValue[0]
-            // Y = target_real
-
-            // BackPropagation: Input Layer
-
-            // Calculate error
-            error = outputLayer.activationValue[0] - target_real; // (y-t) value
-            double Error = 0.5 * error * error;
-            loss = 100 * error * error;
-            Serial.print("loss  = ");
-            Serial.println(loss);
-            ErrorEpochRecorder[epoch] = loss;
-
-            PRINTER(outputLayer.activationValue[0]);
-
-            // Multiply amplification_factor for the value to be inside ADC(0~1023 10bit) range
-            // double BP_outputLayer = error * (outputLayer.activationValue[0]) * (1 - outputLayer.activationValue[0]) * amplification_factor;
-
-            // 앞서 정의된 BP_outputLayer의 값에서 소자의 값을 반영한 특정값을 곱해준 만큼 역전(backpropagation)을 시켜줌(특정값은 feedforward 과정에서 곱해준 일정한 상수와 일치를 시켜주어야 한다)
-            // PRINTER(BP_outputLayer);
-
-            Y[0] = 0;
-            Y[1] = 0;
-            Y[2] = 0.5;
-            Y[3] = 0;
-            Y[4] = 0;
-
-            for (int i = 0; i < 5; i++)
-            {
-                pulseWidthWL[i] = pulseWidth;
-            }
-
-            Backpropagation(Y, pulseWidthWL, core);
-            layer hiddenLayerBackProp;
-            hiddenLayerBackProp = calculateLayerValues(Y, core);
-            // calculateLayerValues(Y, core, hiddenLayerBackProp);
-
-            // Weight Update 1 : Output -> Hidden Layer ----------------------------
-            /* Weight Update
-
-                    Q[0] --
-
-                    Q[1] --
-
-                    Q[2] --                  **(2,2)
-
-                    Q[3] --                  **(2,3)
-
-                    Q[4] --                  **(2,4)
-
-                                |      |       |       |       |
-                                P[0]    P[1]    P[2]    P[3]    P[4]
-
-            */
-        }
+        Params params;
+        double X[2][4] = {{0, 0, 1, 1}, {0, 1, 0, 1}}; // Example input data
+        double Y[4] = {0, 1, 1, 0};                    // Example output data
     }
 }
 //**************************************************************************************************************//
@@ -991,4 +818,121 @@ void printer(char *name, double value)
     Serial.print(" value: ");
     Serial.print(value);
     Serial.println("");
+}
+
+double affine(const Params &params, const double X[2], double B[2])
+{
+    double result = 0.0;
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < params.num_hidden; j++)
+        {
+            result += params.W1[i][j] * X[i];
+        }
+    }
+    for (int i = 0; i < params.num_hidden; i++)
+    {
+        result += params.B1[i];
+    }
+    return result;
+}
+
+double tanh(double x)
+{
+    double ex = std::exp(x);
+    double enx = std::exp(-x);
+    return (ex - enx) / (ex + enx);
+}
+
+double loss_eval_tanh(Params &params, const double X[2][4], const double Y[4], double Z1[4], double H[4], double Z2[4], double Y_hat[4])
+{
+    for (int i = 0; i < 4; i++)
+    {
+        Z1[i] = affine(params, X[0][i], params.B1);
+        H[i] = tanh(Z1[i]);
+        Z2[i] = affine(params, &H[i], params.B2);
+        Y_hat[i] = sigmoidActivFunc(Z2[i]);
+    }
+
+    double loss = 0.0;
+    for (int i = 0; i < 4; i++)
+    {
+        loss += -0.25 * (Y[i] * log(Y_hat[i]) + (1 - Y[i]) * log(1 - Y_hat[i]));
+    }
+
+    return loss;
+}
+
+void get_gradients_tanh(Params &params, const double X[2][4], const double Y[4], double dW1[2][2], double dB1[2], double dW2[2], double &dB2, double &loss)
+{
+    double Z1[4], H[4], Z2[4], Y_hat[4];
+    loss = loss_eval_tanh(params, X, Y, Z1, H, Z2, Y_hat);
+
+    // Backpropagate: Hidden Layer
+    for (int i = 0; i < 4; i++)
+    {
+        dW2[i] = H[i] * (Y_hat[i] - Y[i]);
+    }
+    dB2 = 0.25 * (Y_hat[0] - Y[0]);
+    double dH[4];
+    for (int i = 0; i < 4; i++)
+    {
+        dH[i] = params.W2[0] * (Y_hat[i] - Y[i]);
+    }
+
+    // Backpropagate: Input Layer
+    double dZ1[2][4];
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            dZ1[j][i] = dH[i] * (1 - H[i] * H[i]);
+        }
+    }
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            dW1[i][j] = X[i][0] * dZ1[j][0] + X[i][1] * dZ1[j][1] + X[i][2] * dZ1[j][2] + X[i][3] * dZ1[j][3];
+        }
+        dB1[i] = 0.25 * (dZ1[i][0] + dZ1[i][1] + dZ1[i][2] + dZ1[i][3]);
+    }
+}
+
+void optimize_tanh(Params &params, double learning_rate, int iteration, int sample_size, const double X[2][4], const double Y[4], Params &new_params, double loss_trace[], double Y_hat_predict[4])
+{
+    for (int epoch = 0; epoch < iteration; epoch++)
+    {
+        double dW1[2][2], dB1[2], dW2[2], dB2, loss;
+        get_gradients_tanh(params, X, Y, dW1, dB1, dW2, dB2, loss);
+
+        for (int i = 0; i < 2; i++)
+        {
+            for (int j = 0; j < params.num_hidden; j++)
+            {
+                params.W1[i][j] -= learning_rate * dW1[i][j];
+            }
+            params.B1[i] -= learning_rate * dB1[i];
+        }
+
+        for (int i = 0; i < params.num_hidden; i++)
+        {
+            params.W2[i] -= learning_rate * dW2[i];
+        }
+        params.B2 -= learning_rate * dB2;
+
+        if (epoch % 100 == 0)
+        {
+            loss_trace[epoch / 100] = loss;
+        }
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        double Z1[4], H[4], Z2[4], Y_hat[4];
+        loss_eval_tanh(params, X, Y, Z1, H, Z2, Y_hat);
+        Y_hat_predict[i] = Y_hat[i];
+    }
+
+    new_params = params;
 }
