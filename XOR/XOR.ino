@@ -353,7 +353,7 @@ void loop()
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
             // Condition Setup
-            pulseWidth = 0;
+            pulseWidth = 5;
             preEnableTime = 1;
             postEnableTime = 1;
             setNum = 10;
@@ -436,6 +436,19 @@ void loop()
         update_num           1000
         =============== Condition Palette END
         */
+
+        // Condition Setup
+        pulseWidth = 0;
+        preEnableTime = 1;
+        postEnableTime = 1;
+        setNum = 10;
+        readPeriod = 1000;
+        zeroTime = 1;
+        readDelay = 1;
+        readTime = 2;
+        readSetTime = 1;
+        updateNum = 1000;
+
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
             for (int i = 0; i < setNum; i++)
@@ -448,21 +461,12 @@ void loop()
                         {
                             Potentiation_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
                         }
-
-                        if ((k + 1) % readPeriod == j)
-                        {
-                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-                        }
                     }
                     for (int k = 0; k < updateNum; k++)
                     {
                         for (int rowNum = 0; rowNum < 5; rowNum++)
                         {
                             Depression_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
-                        }
-                        if ((k + 1) % readPeriod == j)
-                        {
-                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
                         }
                     }
                 }
