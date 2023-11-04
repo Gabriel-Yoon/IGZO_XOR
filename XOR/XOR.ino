@@ -491,17 +491,21 @@ void loop()
                     for (int k = 0; k < updateNum; k++)
                     {
                         Potentiation_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
+                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+
                         Depression_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
+                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
                     }
-                    Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
                 }
             }
+            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+            core.setADCmidValue(rowNum);
         }
 
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
-            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-            core.setADCmidValue(rowNum);
+            // Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+            // core.setADCmidValue(rowNum);
         }
 
         delay(50);
