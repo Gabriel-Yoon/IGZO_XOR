@@ -788,7 +788,7 @@ void GroundAllCells(int readTime, int readSetTime, int readDelay, int rowNum, sy
     PIOA->PIO_CODR = 1 << 20; // VH VDDHAFL1
     PIOC->PIO_SODR = n1;      // N1 ON
     PIOC->PIO_SODR = n2;      // N2 ON
-    delay(10);                // Ground Capacitor for 10 milisec
+    delay(1000);              // Ground Capacitor for 1000 milisec
     PIOC->PIO_CODR = 1 << 2;  // N1 clear
     PIOC->PIO_CODR = 1 << 7;  // N2 clear
     Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, arg_core);
