@@ -474,7 +474,7 @@ void loop()
         pulseWidth = 0;
         preEnableTime = 1;
         postEnableTime = 1;
-        setNum = 20;
+        setNum = 10;
         readPeriod = 1000;
         zeroTime = 1;
         readDelay = 1;
@@ -491,10 +491,16 @@ void loop()
                     for (int k = 0; k < updateNum; k++)
                     {
                         Potentiation_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
-                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                        if ((k + 1) % readPeriod == j)
+                        {
+                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                        }
 
                         Depression_6T(pulseWidth, preEnableTime, postEnableTime, zeroTime, rowNum);
-                        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                        if ((k + 1) % readPeriod == j)
+                        {
+                            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                        }
                     }
                 }
             }
