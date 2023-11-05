@@ -7,6 +7,7 @@
 #include <vector>
 // #include <Vector.h>
 #include "synapseArray5by5.h"
+#include "neuronLayer.h"
 
 #undef max
 #undef min
@@ -87,16 +88,13 @@ enum : int
     max_val
 };
 
-struct layer
-{
-    double wsum[5];
-    double activationValue[5];
-};
-
 int DFF1, FB, CR, CON, CON2, HL_CHOP;
 int N1[5][Bit_length], N2[5][Bit_length], N3[5][Bit_length], N4[5][Bit_length], N5[5][Bit_length];
 
 synapseArray5by5 core;
+neuronLayer inputLayer;
+neuronLayer hiddenLayer;
+neuronLayer outputLayer;
 
 int target;
 double target_real;
@@ -127,7 +125,6 @@ void Potentiation(int *N1_0, int *N1_1, int *N1_2, int *N1_3, int *N1_4, int *N2
 void Depression(int *N3_0, int *N3_1, int *N3_2, int *N3_3, int *N3_4, int *N4_0, int *N4_1, int *N4_2, int *N4_3, int *N4_4, int pulse_width, int pre_enable_time, int post_enable_time, int zero_time);
 void Feedforward(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core);
 void Backpropagation(double *arg_X, int *arg_pulseWidthWL, synapseArray5by5 &arg_core);
-void calculateLayerValues(double *arg_X, synapseArray5by5 &arg_core, layer &arg_layer);
 void SGDsetRegisterPotentiation(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime);
 void SGDsetRegisterDepression(int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime);
 
@@ -248,12 +245,6 @@ void loop()
 
         // ****************************************************** SERIAL END
 
-        synapseArray5by5 _core;
-        // XOR Problem Scheme
-        layer inputLayer;
-        layer hiddenLayer;
-        layer outputLayer;
-
         // ARRAY INITIALIZE SAVE ADC VALUE ***************************************
         Serial.println("ARRAY INITIALIZE SAVE ADC VALUE ****************************************");
         int cycle_num = 1; // 초기화  cycle_num = read_period;
@@ -287,7 +278,7 @@ void loop()
         read_period          1000
         zeroTime             1 micro
         read_delay           1 x10 micro
-        read_time            2 mili
+        read_time            2000 micro
         read_set_time        1 mili
         update_num           3000
         =============== Condition Palette END
@@ -300,7 +291,7 @@ void loop()
         readPeriod = 1000;
         zeroTime = 1;
         readDelay = 1;
-        readTime = 2;
+        readTime = 2000;
         readSetTime = 1;
         updateNum = 3000;
 
@@ -347,7 +338,7 @@ void loop()
         read_period          10
         zeroTime             1 micro
         read_delay           1 x10 micro
-        read_time            2 mili
+        read_time            2000 micro
         read_set_time        1 mili
         update_num           1000
         =============== Condition Palette END
@@ -363,7 +354,7 @@ void loop()
             readPeriod = 1000;
             zeroTime = 1;
             readDelay = 1;
-            readTime = 2;
+            readTime = 2000;
             readSetTime = 1;
             updateNum = 3000;
 
@@ -392,7 +383,7 @@ void loop()
             readPeriod = 1000;
             zeroTime = 1;
             readDelay = 1;
-            readTime = 2;
+            readTime = 2000;
             readSetTime = 1;
             updateNum = 1000;
 
@@ -428,7 +419,7 @@ void loop()
             readPeriod = 1000;
             zeroTime = 1;
             readDelay = 1;
-            readTime = 2;
+            readTime = 2000;
             readSetTime = 1;
             updateNum = 3000;
 
@@ -464,7 +455,7 @@ void loop()
         read_period          10
         zeroTime             1 micro
         read_delay           1 x10 micro
-        read_time            2 mili
+        read_time            2000 micro
         read_set_time        1 mili
         update_num           1000
         =============== Condition Palette END
@@ -478,7 +469,7 @@ void loop()
         readPeriod = 1000;
         zeroTime = 1;
         readDelay = 1;
-        readTime = 2;
+        readTime = 2000;
         readSetTime = 1;
         updateNum = 3000;
 
@@ -534,7 +525,7 @@ void loop()
             readPeriod = 1000;
             zeroTime = 1;
             readDelay = 1;
-            readTime = 2;
+            readTime = 2000;
             readSetTime = 1;
             updateNum = 1000;
 
@@ -563,6 +554,35 @@ void loop()
 
         // XOR PROBLEM SOLVING ****************************************************
         Serial.println("XOR PROBLEM SOLVING ****************************************************");
+        Serial.println("TESTING ADC VALUE RANGE ************************************************");
+        /*
+        Synapse Weight Distribution
+        H : input - hidden layer
+        O : hidden - output layer
+
+            0   1   2   3   4
+        0---H---.---H---.---H
+            |   |   |   |   |
+        1---.---O---.---.---.
+            |   |   |   |   |
+        2---H---.---H---.---H
+            |   |   |   |   |
+        3---.---O---.---.---.
+            |   |   |   |   |
+        4---.---O---.---.---.
+
+        */
+        double testValue[5] = {1, 0, 1, 0, 1};
+        inputLayer.setPreNeuronValues(testValue);
+        FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
+        printADCN5N6value(core);
+
+        // double inputLayerValues[5] = {rand() % 2, 0, rand() % 2, 0, 0};
+        // inputLayer.setPreNeuronValues(inputLayerValues);
+        // FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
+
+        Serial.println("************************************************ XOR PROBLEM SOLVING END");
+        // ************************************************ XOR PROBLEM SOLVING END
 
         // 3. GROUNDING TEST ------------------------------------------------------
     }
@@ -753,7 +773,7 @@ void read_scaling_single(int read_time, int read_delay, int read_row, synapseArr
     PIOA->PIO_SODR = 1 << 19; // DS
     PIOB->PIO_SODR = 1 << 21; // CR
 
-    for (int i = 0; i < read_time * 1000; i++)
+    for (int i = 0; i < read_time; i++)
     {
         PIOD->PIO_SODR = wl;     // WL SET
         PIOA->PIO_SODR = 1 << 7; // DFF1 CLK HIGH
@@ -768,6 +788,107 @@ void read_scaling_single(int read_time, int read_delay, int read_row, synapseArr
         PIOA->PIO_CODR = 1 << 7; // DFF1 CLK LOW
         PIOD->PIO_CODR = wl;     // WL clear
         delayMicroseconds(10);   //
+    }
+
+    PIOA->PIO_SODR = 1 << 7;  // DFF1 CLK HIGH
+    PIOA->PIO_CODR = 1 << 7;  // DFF1 CLK LOW
+    PIOA->PIO_CODR = 1 << 19; // DS ON
+    PIOB->PIO_SODR = 1 << 14; // CON OFF
+
+    ADC_0 = ADC->ADC_CDR[7];  // read data on A0
+    ADC_1 = ADC->ADC_CDR[6];  // read data on A1
+    ADC_2 = ADC->ADC_CDR[5];  // read data on A2
+    ADC_3 = ADC->ADC_CDR[4];  // read data on A3
+    ADC_4 = ADC->ADC_CDR[3];  // read data on A4
+    PIOB->PIO_CODR = 1 << 21; // CR
+
+    // Serial.print(ADC_0 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_1 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_2 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_3 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_4 / 4);
+
+    arg_core.setADCvalueTemp(ADC_0 / 4, ADC_1 / 4, ADC_2 / 4, ADC_3 / 4, ADC_4 / 4);
+    //  return ADC_0;
+}
+
+void read_scaling_multiple(int read_time, int read_delay, neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
+{
+    int wl_0 = 1;
+    int wl_1 = 1 << 1;
+    int wl_2 = 1 << 2;
+    int wl_3 = 1 << 3;
+    int wl_4 = 1 << 6;
+    int ADC_1, ADC_2, ADC_3, ADC_4, ADC_0;
+    int WL[read_time];
+    int wl_clear = wl_0 | wl_1 | wl_2 | wl_3 | wl_4;
+    int WL0[read_time], WL1[read_time], WL2[read_time], WL3[read_time], WL4[read_time];
+
+    int wl_0, wl_1, wl_2, wl_3, wl_4;
+
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._preNeuronValue[0] * read_time))
+            WL0[i] = wl_0;
+        else
+            WL0[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._preNeuronValue[1] * read_time))
+            WL1[i] = wl_1;
+        else
+            WL1[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._preNeuronValue[2] * read_time))
+            WL2[i] = wl_2;
+        else
+            WL2[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._preNeuronValue[3] * read_time))
+            WL3[i] = wl_3;
+        else
+            WL3[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._preNeuronValue[4] * read_time))
+            WL4[i] = wl_4;
+        else
+            WL4[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        WL[i] = WL0[i] | WL1[i] | WL2[i] | WL3[i] | WL4[i];
+    }
+
+    PIOB->PIO_CODR = 1 << 14; // CON
+    PIOA->PIO_SODR = 1 << 19; // DS
+    PIOB->PIO_SODR = 1 << 21; // CR
+
+    for (int i = 0; i < read_time; i++)
+    {
+        PIOD->PIO_SODR = WL[i];    // WL SET
+        PIOA->PIO_SODR = 1 << 7;   // DFF1 CLK HIGH
+        PIOA->PIO_CODR = 1 << 7;   // DFF1 CLK LOW
+        PIOD->PIO_CODR = wl_clear; // WL clear
+        delayMicroseconds(1);      //
+    }
+    for (int i = 0; i < read_delay; i++)
+    {
+        PIOD->PIO_SODR = 0;        //
+        PIOA->PIO_SODR = 1 << 7;   // DFF1 CLK HIGH
+        PIOA->PIO_CODR = 1 << 7;   // DFF1 CLK LOW
+        PIOD->PIO_CODR = wl_clear; // WL clear
+        delayMicroseconds(10);     //
     }
 
     PIOA->PIO_SODR = 1 << 7;  // DFF1 CLK HIGH
@@ -825,10 +946,9 @@ void GroundAllCells(int readTime, int readSetTime, int readDelay, int rowNum, sy
 
 void Read_operation_forward_6T(int readTime, int readSetTime, int readDelay, int rowNum, synapseArray5by5 &arg_core)
 {
-    // Serial.println("Read operation start");
     int n1;
     int n3;
-    // extra1: row that you want to read
+
     if (rowNum == 0)
     {
         n1 = (1 << 12);
@@ -870,6 +990,58 @@ void Read_operation_forward_6T(int readTime, int readSetTime, int readDelay, int
     PIOC->PIO_SODR = n1; // N1 SET
     delayMicroseconds(readSetTime);
     read_scaling_single(readTime, readDelay, rowNum, arg_core);
+    arg_core.setADCvalueN6();
+    PIOC->PIO_CODR = n1; // N1 Clear
+
+    arg_core.setADCvalueN5N6();
+}
+
+void FeedForward(int readTime, int readSetTime, int readDelay, neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
+{
+    int n1;
+    int n3;
+
+    if (arg_neurons._preNeuronValue[0] != 0)
+    {
+        n1 = (1 << 12);
+        n3 = (1 << 17);
+    }
+    else if (arg_neurons._preNeuronValue[1] != 0)
+    {
+        n1 = (1 << 13);
+        n3 = (1 << 18);
+    }
+    else if (arg_neurons._preNeuronValue[2] != 0)
+    {
+        n1 = (1 << 14);
+        n3 = (1 << 19);
+    }
+    else if (arg_neurons._preNeuronValue[3] != 0)
+    {
+        n1 = (1 << 15);
+        n3 = (1 << 9);
+    }
+    else if (arg_neurons._preNeuronValue[4] != 0)
+    {
+        n1 = (1 << 16);
+        n3 = (1 << 8);
+    }
+
+    // Use N56
+    state_switch(3);
+    PIOC->PIO_SODR = n3; // N3 SET
+    delayMicroseconds(readSetTime);
+    read_scaling_multiple(readTime, readDelay, arg_neurons, arg_core);
+    arg_core.setADCvalueN5();
+    PIOC->PIO_CODR = n3; // N3 Clear
+
+    delayMicroseconds(20); // to separate N5 / N6 reads
+
+    // Serial.print("N6 - ");
+    state_switch(5);
+    PIOC->PIO_SODR = n1; // N1 SET
+    delayMicroseconds(readSetTime);
+    read_scaling_multiple(readTime, readDelay, arg_neurons, arg_core);
     arg_core.setADCvalueN6();
     PIOC->PIO_CODR = n1; // N1 Clear
 
@@ -1134,6 +1306,22 @@ void printer(char *name, double value)
     Serial.println("");
 }
 
+void printADCN5N6value(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC N5N6 value print");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._ADCvalueN5N6[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+    Serial.println("-------------------");
+}
+
 void printADCminValue(synapseArray5by5 &arg_core)
 {
     Serial.println("-------------------");
@@ -1196,4 +1384,12 @@ void printADCgndValue(synapseArray5by5 &arg_core)
         Serial.println(" ");
     }
     Serial.println("-------------------");
+}
+
+void doubleArraySync(double *arr, double *temp)
+{
+    for (int i = 0; i < 5; i++)
+    {
+        arr[i] = temp[i];
+    }
 }
