@@ -100,3 +100,122 @@ void synapseArray5by5::setADCgndValue(int rowNum)
         this->_gnd[rowNum][i] = this->_ADCvalueN5N6[i];
     }
 }
+//--------------------------------------------------------------
+void synapseArray5by5::setInitialWeight()
+{
+
+    /*
+    Synapse Weight Distribution
+    H : input - hidden layer
+    O : hidden - output layer
+
+        0   1   2   3   4
+    0---H---.---H---.---H
+        |   |   |   |   |
+    1---.---O---.---.---.
+        |   |   |   |   |
+    2---H---.---H---.---H
+        |   |   |   |   |
+    3---.---O---.---.---.
+        |   |   |   |   |
+    4---.---O---.---.---.
+
+    */
+
+    // 75.80% accuracy
+    // Temporary array
+    double arr[5][5] = {
+        {-4.8384, 0, -2.5380, 0, -0.0782},
+        {0, -7.2057, 0, 0, 0},
+        {-4.5076, 0, -2.4469, 0, -2.0661},
+        {0, 6.5687, 0, 0, 0},
+        {0, 0.6730, 0, 0, 0}};
+
+    // Synchronize
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            this->initialWeight[i][j] = arr[i][j];
+        }
+    }
+}
+//--------------------------------------------------------------
+void synapseArray5by5::setTargetWeight()
+{
+
+    /*
+    Synapse Weight Distribution
+    H : input - hidden layer
+    O : hidden - output layer
+
+        0   1   2   3   4
+    0---H---.---H---.---H
+        |   |   |   |   |
+    1---.---O---.---.---.
+        |   |   |   |   |
+    2---H---.---H---.---H
+        |   |   |   |   |
+    3---.---O---.---.---.
+        |   |   |   |   |
+    4---.---O---.---.---.
+
+    */
+
+    // 100% accuracy
+    // Temporary array
+    double arr[5][5] = {
+        {-4.4431, 0, -3.3611, 0, -0.0424},
+        {0, -6.8898, 0, 0, 0},
+        {-4.3886, 0, -3.2379, 0, -1.6680},
+        {0, 6.3654, 0, 0, 0},
+        {0, 0.5086, 0, 0, 0}};
+
+    // Synchronize
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            this->targetWeight[i][j] = arr[i][j];
+        }
+    }
+}
+//--------------------------------------------------------------
+void synapseArray5by5::setTargetBias()
+{
+    /*
+    Synapse Weight Distribution
+    H : input - hidden layer
+    O : hidden - output layer
+
+        0   1   2   3   4
+    0---H---.---H---.---H
+        |   |   |   |   |
+    1---.---O---.---.---.
+        |   |   |   |   |
+    2---H---.---H---.---H
+        |   |   |   |   |
+    3---.---O---.---.---.
+        |   |   |   |   |
+    4---.---O---.---.---.
+
+    */
+
+    // 100% accuracy
+    // Temporary array
+    double arr[5][5] = {
+        {1.6303, 0, 4.9258, 0, -0.3763},
+        {0, -2.9429, 0, 0, 0},
+        {1.6303, 0, 4.9258, 0, -0.3763},
+        {0, -2.9429, 0, 0, 0},
+        {0, -2.9429, 0, 0, 0}};
+
+    // Synchronize
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            this->targetBias[i][j] = arr[i][j];
+        }
+    }
+}

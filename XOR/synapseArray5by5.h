@@ -67,6 +67,10 @@ public:
     void setADCmidValue(int rowNum);
     void setADCmaxValue(int rowNum);
     void setADCgndValue(int rowNum);
+
+    void setInitialWeight();
+    void setTargetWeight();
+    void setTargetBias();
 };
 //**************************************************************************************************************//
 #endif
