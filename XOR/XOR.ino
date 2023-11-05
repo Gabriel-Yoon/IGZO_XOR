@@ -495,14 +495,14 @@ void loop()
                     }
                 }
             }
-            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-            core.setADCmidValue(rowNum);
+            // Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+            // core.setADCmidValue(rowNum);
         }
 
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
-            // Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-            // core.setADCmidValue(rowNum);
+            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+            core.setADCmidValue(rowNum);
         }
 
         delay(50);
