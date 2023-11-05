@@ -590,6 +590,18 @@ void loop()
             inputLayer._preNeuronValue[4] = 0.5;
             FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
             printADCN5N6value(core);
+
+            // theoretically,
+            double tempArr[5];
+            for (int i = 0; i < 5; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    tempArr[i] = core._mid[i][j] * inputLayer._preNeuronValue[i];
+                }
+                Serial.println("Theoretically ADC values : ");
+                Serial.print(tempArr[i]);
+            }
         }
 
         // double inputLayerValues[5] = {rand() % 2, 0, rand() % 2, 0, 0};
