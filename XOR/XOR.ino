@@ -572,10 +572,19 @@ void loop()
         4---.---O---.---.---.
 
         */
-        double testValue[5] = {1, 0, 1, 0, 1};
-        inputLayer.setPreNeuronValues(testValue);
-        FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
-        printADCN5N6value(core);
+
+        // EPOCH ---------------------------------------------------------
+        for (int i = 0; i < epoch; i++)
+        {
+            Serial.println("// ---------------------------------------------------------");
+            Serial.print("epoch = ");
+            Serial.println(i + 1);
+
+            double testValue[5] = {1, 0, 1, 0, 1};
+            inputLayer.setPreNeuronValues(testValue);
+            FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
+            printADCN5N6value(core);
+        }
 
         // double inputLayerValues[5] = {rand() % 2, 0, rand() % 2, 0, 0};
         // inputLayer.setPreNeuronValues(inputLayerValues);
