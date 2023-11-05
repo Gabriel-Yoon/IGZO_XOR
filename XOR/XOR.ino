@@ -593,15 +593,17 @@ void loop()
 
             // theoretically,
             double tempArr[5];
+            Serial.println("Theoretically ADC values : ");
             for (int i = 0; i < 5; i++)
             {
                 for (int j = 0; j < 5; j++)
                 {
                     tempArr[i] = core._mid[i][j] * inputLayer._preNeuronValue[i];
                 }
-                Serial.println("Theoretically ADC values : ");
                 Serial.print(tempArr[i]);
+                Serial.print(" ");
             }
+            Serial.println("");
         }
 
         // double inputLayerValues[5] = {rand() % 2, 0, rand() % 2, 0, 0};
