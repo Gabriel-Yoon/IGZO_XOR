@@ -583,11 +583,11 @@ void loop()
 
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
-            inputLayer._preNeuronValue[0] = 1;
+            inputLayer._preNeuronValue[0] = 0.2;
             inputLayer._preNeuronValue[1] = 0;
-            inputLayer._preNeuronValue[2] = 1;
+            inputLayer._preNeuronValue[2] = 0.3;
             inputLayer._preNeuronValue[3] = 0;
-            inputLayer._preNeuronValue[4] = 1;
+            inputLayer._preNeuronValue[4] = 0.5;
             FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
             printADCN5N6value(core);
         }
@@ -844,7 +844,7 @@ void read_scaling_multiple(int read_time, int read_delay, neuronLayer &arg_neuro
     int WL0[read_time], WL1[read_time], WL2[read_time], WL3[read_time], WL4[read_time];
 
     Serial.println("preNeuronValues round print");
-    for (int i = 1; i < 5; i++)
+    for (int i = 0; i < 5; i++)
     {
         Serial.print(round(arg_neurons._preNeuronValue[i] * read_time));
         Serial.print(" ");
