@@ -520,27 +520,33 @@ void loop()
         // 2. --------------------------------------- ADC ZERO VALUE EXTRACTION END
 
         // 3. GROUNDING TEST ------------------------------------------------------
-        Serial.println("3. GROUNDING TEST ------------------------------------------------------");
+        bool enable_GNDTEST = false;
 
-        // Condition Setup
-        pulseWidth = 1;
-        preEnableTime = 1;
-        postEnableTime = 1;
-        setNum = 10;
-        readPeriod = 1000;
-        zeroTime = 1;
-        readDelay = 1;
-        readTime = 2;
-        readSetTime = 1;
-        updateNum = 1000;
-
-        for (int rowNum = 0; rowNum < 5; rowNum++)
+        if (enable_GNDTEST)
         {
-            GroundAllCells(readTime, readSetTime, readDelay, rowNum, core);
-            core.setADCgndValue(rowNum);
-        }
+            Serial.println("3. GROUNDING TEST ------------------------------------------------------");
 
-        Serial.println("----------------------------------------------------- GROUNDING TEST END");
+            // Condition Setup
+            pulseWidth = 1;
+            preEnableTime = 1;
+            postEnableTime = 1;
+            setNum = 10;
+            readPeriod = 1000;
+            zeroTime = 1;
+            readDelay = 1;
+            readTime = 2;
+            readSetTime = 1;
+            updateNum = 1000;
+
+            // Grounding procedure and save ground values
+            for (int rowNum = 0; rowNum < 5; rowNum++)
+            {
+                GroundAllCells(readTime, readSetTime, readDelay, rowNum, core);
+                core.setADCgndValue(rowNum);
+            }
+
+            Serial.println("----------------------------------------------------- GROUNDING TEST END");
+        }
         // ----------------------------------------------------- GROUNDING TEST END
 
         Serial.println("************************************ ARRAY INITIALIZE SAVE ADC VALUE END");
@@ -550,7 +556,15 @@ void loop()
         printADCminValue(core);
         printADCmaxValue(core);
         printADCmidValue(core);
-        printADCgndValue(core);
+        if (enable_GNDTEST)
+        {
+            printADCgndValue(core);
+        }
+
+        // XOR PROBLEM SOLVING ****************************************************
+        Serial.println("XOR PROBLEM SOLVING ****************************************************");
+
+        // 3. GROUNDING TEST ------------------------------------------------------
     }
 }
 //**************************************************************************************************************//
@@ -739,13 +753,13 @@ void read_scaling_single(int read_time, int read_delay, int read_row, synapseArr
     PIOA->PIO_SODR = 1 << 19; // DS
     PIOB->PIO_SODR = 1 << 21; // CR
 
-    for (int i = 0; i < read_time; i++)
+    for (int i = 0; i < read_time * 1000; i++)
     {
         PIOD->PIO_SODR = wl;     // WL SET
         PIOA->PIO_SODR = 1 << 7; // DFF1 CLK HIGH
         PIOA->PIO_CODR = 1 << 7; // DFF1 CLK LOW
         PIOD->PIO_CODR = wl;     // WL clear
-        delayMicroseconds(1000); //
+        delayMicroseconds(1);    //
     }
     for (int i = 0; i < read_delay; i++)
     {
