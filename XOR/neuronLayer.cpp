@@ -29,7 +29,7 @@ double neuronLayer::tanhActivFunc(double &x)
 //--------------------------------------------------------------
 void neuronLayer::setPreNeuronValues(double *p)
 {
-    for (int i = 0; i < 5 : i++)
+    for (int i = 0; i < 5; i++)
     {
         this->_preNeuronValue[i] = p[i];
     }
@@ -37,7 +37,7 @@ void neuronLayer::setPreNeuronValues(double *p)
 //--------------------------------------------------------------
 void neuronLayer::setPostNeuronValues(double *p)
 {
-    for (int i = 0; i < 5 : i++)
+    for (int i = 0; i < 5; i++)
     {
         this->_postNeuronValue[i] = p[i];
     }
