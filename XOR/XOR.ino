@@ -1310,13 +1310,10 @@ void printADCN5N6value(synapseArray5by5 &arg_core)
     Serial.println("ADC N5N6 value print");
     for (int i = 0; i < 5; i++)
     {
-        for (int j = 0; j < 5; j++)
-        {
-            Serial.print(arg_core._ADCvalueN5N6[i][j]);
-            Serial.print(" ");
-        }
-        Serial.println(" ");
+        Serial.print(arg_core._ADCvalueN5N6[i]);
+        Serial.print(" ");
     }
+    Serial.println("");
     Serial.println("-------------------");
 }
 
