@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 neuronLayer::neuronLayer()
 {
-    for (int i = 0; i < 5 : i++)
+    for (int i = 0; i < 5; i++)
     {
         this->_preNeuronValue[i] = 0.0;
         this->_postNeuronValue[i] = 0.0;
