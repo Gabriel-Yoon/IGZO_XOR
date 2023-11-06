@@ -594,16 +594,11 @@ void loop()
             // theoretically,
             double tempArr[5] = {0};
             Serial.println("Theoretically ADC values : ");
-            for (int i = 0; i < 5; i++)
+            for (int col_num = 0; col_num < 5; col_num++)
             {
-                for (int j = 0; j < 5; j++)
+                for (int row_num = 0; row_num < 5; row_num++)
                 {
-                    Serial.print("mid value : ");
-                    Serial.print(core._mid[j][i]);
-                    Serial.print(" neuron value : ");
-                    Serial.print(inputLayer._preNeuronValue[i]);
-                    Serial.println("");
-                    tempArr[i] += core._mid[j][i] * inputLayer._preNeuronValue[i];
+                    tempArr[col_num] += core._mid[row_num][col_num] * inputLayer._preNeuronValue[row_num];
                 }
                 Serial.print(tempArr[i]);
                 Serial.print(" ");
