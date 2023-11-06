@@ -604,7 +604,7 @@ void loop()
 
         // EPOCH ---------------------------------------------------------
         // core.setRange(100);
-        epoch = 10;
+        epoch = 2;
         for (int i = 0; i < epoch; i++)
         {
             Serial.println("// ---------------------------------------------------------");
@@ -618,6 +618,8 @@ void loop()
             inputLayer._preNeuronValue[2] = 0.3;
             inputLayer._preNeuronValue[3] = 0;
             inputLayer._preNeuronValue[4] = 0.5;
+
+            // FF: input->hidden
             FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
             Serial.println("Obtained ADC Value after input->hidden FF");
             printADCN5N6value(core);
@@ -627,16 +629,29 @@ void loop()
             printLayerPostNeuronValue(inputLayer);
 
             inputLayer.sigmoidActivation();
+            Serial.println("Activation Value after input->hidden FF");
             printLayerPostNeuronActivationValue(inputLayer);
 
             hiddenLayer.syncPostToPreNeuronValues(inputLayer);
+            Serial.println("PreNeuron Value of hidden layer");
             printLayerPreNeuronValue(hiddenLayer);
 
+            // FF: hidden->output
             // There is a hidden error here. the values that should be zero could have a possibility of not having 0
             FeedForward(readTime, readSetTime, readDelay, hiddenLayer, core);
+            Serial.println("Obtained ADC Value after hidden->output FF");
+            printADCN5N6value(core);
+
             referencing(hiddenLayer, core);
+            Serial.println("Referenced Value after hidden->output FF");
+            printLayerPostNeuronValue(hiddenLayer);
+
             hiddenLayer.sigmoidActivation();
+            Serial.println("Activation Value after hidden->output FF");
+            printLayerPostNeuronActivationValue(hiddenLayer);
+
             outputLayer.syncPostToPreNeuronValues(hiddenLayer);
+            Serial.println("PreNeuron Value of output layer");
             printLayerPreNeuronValue(outputLayer);
 
             // obtained ADC value
