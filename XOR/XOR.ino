@@ -603,13 +603,6 @@ void loop()
                 Serial.print(tempArr[col_num]);
                 Serial.print(" ");
             }
-
-            // Pairwise test
-            std::pair<int, int> p;
-            p.first = 1;
-            Serial.print("PAIR TEST: ");
-            Serial.println(p.first);
-
             Serial.println("");
         }
 
