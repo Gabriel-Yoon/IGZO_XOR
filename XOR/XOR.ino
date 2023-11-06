@@ -571,6 +571,7 @@ void loop()
         printADCminValue(core);
         printADCmaxValue(core);
         printADCmidValue(core);
+
         if (enable_GNDTEST)
         {
             printADCgndValue(core);
@@ -1385,7 +1386,7 @@ void referencing(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
         for (int row_num = 0; row_num < 5; row_num++)
         {
             tempArr[col_num] += (-1) * arg_neurons._preNeuronValue[row_num] * arg_core._ref[row_num][col_num];
-            tempArr[col_num] += (-1) * arg_core._noise[row_num][col_num];
+            // tempArr[col_num] += (-1) * arg_core._noise[row_num][col_num];
 
             // Add bias
             if (arg_core._targetBias[row_num][col_num] != 0)
@@ -1477,6 +1478,22 @@ void printADCgndValue(synapseArray5by5 &arg_core)
         for (int j = 0; j < 5; j++)
         {
             Serial.print(arg_core._gnd[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+    Serial.println("-------------------");
+}
+
+void printADCnoiseValue(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC Noise value print");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._noise[i][j]);
             Serial.print(" ");
         }
         Serial.println(" ");
