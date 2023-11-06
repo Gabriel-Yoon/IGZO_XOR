@@ -604,6 +604,12 @@ void loop()
                 Serial.print(" ");
             }
 
+            // Pairwise test
+            std::pair<int, int> p;
+            p.first = 1;
+            Serial.print("PAIR TEST: ");
+            Serial.println(p.first);
+
             Serial.println("");
         }
 
@@ -857,13 +863,6 @@ void read_scaling_multiple(int read_time, int read_delay, neuronLayer &arg_neuro
     int WL[read_time];
     int wl_clear = wl_0 | wl_1 | wl_2 | wl_3 | wl_4;
     int WL0[read_time], WL1[read_time], WL2[read_time], WL3[read_time], WL4[read_time];
-
-    Serial.println("preNeuronValues round print");
-    for (int i = 0; i < 5; i++)
-    {
-        Serial.print(round(arg_neurons._preNeuronValue[i] * read_time));
-        Serial.print(" ");
-    }
 
     for (int i = 0; i < read_time; i++)
     {
