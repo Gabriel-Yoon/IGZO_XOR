@@ -2,25 +2,25 @@
 
 synapseArray5by5::synapseArray5by5()
 {
-    // Resize
-    this->_ADCvalueN5.resize(5);
-    this->_ADCvalueN6.resize(5);
-    this->_ADCvalueN5N6.resize(5);
+    // // Resize
+    // this->_ADCvalueN5.resize(5);
+    // this->_ADCvalueN6.resize(5);
+    // this->_ADCvalueN5N6.resize(5);
 
-    this->_min.resize(5);
-    this->_mid.resize(5);
-    this->_max.resize(5);
+    // this->_min.resize(5);
+    // this->_mid.resize(5);
+    // this->_max.resize(5);
 
-    this->initialWeight.resize(5);
-    this->targetWeight.resize(5);
-    this->targetBias.resize(5);
+    // this->initialWeight.resize(5);
+    // this->targetWeight.resize(5);
+    // this->targetBias.resize(5);
 
-    for (int i = 0; i < 5; i++)
-    {
-        this->initialWeight[i].resize(5);
-        this->targetWeight[i].resize(5);
-        this->targetBias[i].resize(5);
-    }
+    // for (int i = 0; i < 5; i++)
+    // {
+    //     this->initialWeight[i].resize(5);
+    //     this->targetWeight[i].resize(5);
+    //     this->targetBias[i].resize(5);
+    // }
 
     // Initialize
     for (int i = 0; i < 5; i++)
