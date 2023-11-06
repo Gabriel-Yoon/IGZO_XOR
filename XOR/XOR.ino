@@ -541,7 +541,7 @@ void loop()
         // ----------------------------------------------------- GROUNDING TEST END
 
         // 4. ARRAY NOISE -----------------------------------------------------
-        bool enable_noise = true;
+        bool enable_noise = false;
         if (enable_noise)
         {
             Serial.println("4. ARRAY NOISE ---------------------------------------------------------");
