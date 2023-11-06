@@ -600,7 +600,7 @@ void loop()
                 {
                     tempArr[col_num] += core._mid[row_num][col_num] * inputLayer._preNeuronValue[row_num];
                 }
-                Serial.print(tempArr[i]);
+                Serial.print(tempArr[col_num]);
                 Serial.print(" ");
             }
 
