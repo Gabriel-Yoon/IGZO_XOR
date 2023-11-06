@@ -2,6 +2,27 @@
 
 synapseArray5by5::synapseArray5by5()
 {
+    // Resize
+    this->_ADCvalueN5.resize(5);
+    this->_ADCvalueN6.resize(5);
+    this->_ADCvalueN5N6.resize(5);
+
+    this->_min.resize(5);
+    this->_mid.resize(5);
+    this->_max.resize(5);
+
+    this->initialWeight.resize(5);
+    this->targetWeight.resize(5);
+    this->targetBias.resize(5);
+
+    for (int i = 0; i < 5; i++)
+    {
+        this->initialWeight[i].resize(5);
+        this->targetWeight[i].resize(5);
+        this->targetBias[i].resize(5);
+    }
+
+    // Initialize
     for (int i = 0; i < 5; i++)
     {
         this->_WL[i] = 0;
@@ -124,7 +145,8 @@ void synapseArray5by5::setInitialWeight()
 
     // 75.80% accuracy
     // Temporary array
-    double arr[5][5] = {
+
+    std::vector<std::vector<double>> vec{
         {-4.8384, 0, -2.5380, 0, -0.0782},
         {0, -7.2057, 0, 0, 0},
         {-4.5076, 0, -2.4469, 0, -2.0661},
@@ -136,7 +158,7 @@ void synapseArray5by5::setInitialWeight()
     {
         for (int j = 0; j < 5; j++)
         {
-            this->initialWeight[i][j] = arr[i][j];
+            this->initialWeight[i][j] = vec[i][j];
         }
     }
 }
@@ -164,7 +186,8 @@ void synapseArray5by5::setTargetWeight()
 
     // 100% accuracy
     // Temporary array
-    double arr[5][5] = {
+
+    std::vector<std::vector<double>> vec{
         {-4.4431, 0, -3.3611, 0, -0.0424},
         {0, -6.8898, 0, 0, 0},
         {-4.3886, 0, -3.2379, 0, -1.6680},
@@ -176,7 +199,7 @@ void synapseArray5by5::setTargetWeight()
     {
         for (int j = 0; j < 5; j++)
         {
-            this->targetWeight[i][j] = arr[i][j];
+            this->targetWeight[i][j] = vec[i][j];
         }
     }
 }
@@ -203,7 +226,7 @@ void synapseArray5by5::setTargetBias()
 
     // 100% accuracy
     // Temporary array
-    double arr[5][5] = {
+    std::vector<std::vector<double>> vec{
         {1.6303, 0, 4.9258, 0, -0.3763},
         {0, -2.9429, 0, 0, 0},
         {1.6303, 0, 4.9258, 0, -0.3763},
@@ -215,7 +238,7 @@ void synapseArray5by5::setTargetBias()
     {
         for (int j = 0; j < 5; j++)
         {
-            this->targetBias[i][j] = arr[i][j];
+            this->targetBias[i][j] = vec[i][j];
         }
     }
 }

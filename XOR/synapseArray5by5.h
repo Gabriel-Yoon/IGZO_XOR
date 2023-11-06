@@ -24,32 +24,32 @@ class synapseArray5by5
 {
     /*---------------------fields-----------------*/
 public:
-    int _min[5][5];
-    int _mid[5][5];
-    int _max[5][5];
-    int _gnd[5][5];
+    std::vector<std::vector<int>> _min;
+    std::vector<std::vector<int>> _mid;
+    std::vector<std::vector<int>> _max;
+    std::vector<std::vector<int>> _gnd;
 
     // input
-    int _WL[5];
+    std::vector<int> _WL;
 
     // output
-    int _ADCvalueTemp[5];
-    int _ADCvalueN5[5];
-    int _ADCvalueN6[5];
-    int _ADCvalueN5N6[5];
+    std::vector<int> _ADCvalueTemp;
+    std::vector<int> _ADCvalueN5;
+    std::vector<int> _ADCvalueN6;
+    std::vector<int> _ADCvalueN5N6;
 
     // weight matrix
-    int initialWeight[5][5];
-    int targetWeight[5][5];
-    int targetBias[5][5];
+    std::vector<std::vector<double>> initialWeight;
+    std::vector<std::vector<double>> targetWeight;
+    std::vector<std::vector<double>> targetBias;
 
     int range;
 
     // (SGD) Stochastic Gradient Descent
-    int p[5];
-    int q[5];
-    int P[5];
-    int Q[5];
+    std::vector<int> p[5];
+    std::vector<int> q[5];
+    std::vector<int> P[5];
+    std::vector<int> Q[5];
     /*---------------------methods----------------*/
 
 public:
