@@ -607,8 +607,12 @@ void loop()
             // Pairwise test
             std::pair<int, int> p;
             p.first = 1;
+            std::vector<int> vec;
+            vec.push_back(10);
             Serial.print("PAIR TEST: ");
             Serial.println(p.first);
+            Serial.print("VECTOR TEST: ");
+            Serial.println(vec[0]);
 
             Serial.println("");
         }
