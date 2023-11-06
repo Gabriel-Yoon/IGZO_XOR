@@ -540,6 +540,30 @@ void loop()
         }
         // ----------------------------------------------------- GROUNDING TEST END
 
+        // 4. ARRAY BIAS ------------------------------------------------------
+        Serial.println("4. ARRAY BIAS ----------------------------------------------------------");
+
+        // Condition Setup
+        pulseWidth = 0;
+        preEnableTime = 1;
+        postEnableTime = 1;
+        setNum = 10;
+        readPeriod = 1000;
+        zeroTime = 1;
+        readDelay = 1;
+        readTime = 0;
+        readSetTime = 1;
+        updateNum = 1000;
+
+        for (int rowNum = 0; rowNum < 5; rowNum++)
+        {
+            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+            core.setADCbiasValue(rowNum);
+        }
+
+        Serial.println("--------------------------------------------------------- ARRAY BIAS END");
+        // ----------------------------------------------------- ARRAY BIAS
+
         Serial.println("************************************ ARRAY INITIALIZE SAVE ADC VALUE END");
         // ************************************ ARRAY INITIALIZE SAVE ADC VALUE END
 
@@ -589,21 +613,35 @@ void loop()
             inputLayer._preNeuronValue[3] = 0;
             inputLayer._preNeuronValue[4] = 0.5;
             FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
-            printADCN5N6value(core);
+            referencing(inputLayer, core);
+            inputLayer.sigmoidActivation();
+            hiddenLayer.syncPostToPreNeuronValues(inputLayer);
+            printLayerPreNeuronValue(hiddenLayer);
+
+            // There is a hidden error here. the values that should be zero could have a possibility of not having 0
+            FeedForward(readTime, readSetTime, readDelay, hiddenLayer, core);
+            referencing(hiddenLayer, core);
+            hiddenLayer.sigmoidActivation();
+            outputLayer.syncPostToPreNeuronValues(hiddenLayer);
+            printLayerPreNeuronValue(outputLayer);
+
+            // obtained ADC value
+            // - referencing
+            // - bias
 
             // theoretically,
-            double tempArr[5] = {0};
-            Serial.println("Theoretically ADC values : ");
-            for (int col_num = 0; col_num < 5; col_num++)
-            {
-                for (int row_num = 0; row_num < 5; row_num++)
-                {
-                    tempArr[col_num] += core._mid[row_num][col_num] * inputLayer._preNeuronValue[row_num];
-                }
-                Serial.print(tempArr[col_num]);
-                Serial.print(" ");
-            }
-            Serial.println("");
+            // double tempArr[5] = {0};
+            // Serial.println("Theoretically ADC values : ");
+            // for (int col_num = 0; col_num < 5; col_num++)
+            // {
+            //     for (int row_num = 0; row_num < 5; row_num++)
+            //     {
+            //         tempArr[col_num] += core._mid[row_num][col_num] * inputLayer._preNeuronValue[row_num];
+            //     }
+            //     Serial.print(tempArr[col_num]);
+            //     Serial.print(" ");
+            // }
+            // Serial.println("");
         }
 
         // double inputLayerValues[5] = {rand() % 2, 0, rand() % 2, 0, 0};
@@ -1324,6 +1362,33 @@ double BinaryCrossentropy(double &y_hat, double &y)
     return -y * log(y_hat) + (1 - y) * log(1 - y_hat);
 }
 
+void referencing(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
+{
+    // Purpose : get postNeuronValue
+    // ADC - x *new_ref -adc_bias
+    // adcvalueN5N6[i] - arg_core._ref[i][j] - arg_core._ADCbias[i]
+    // divided by arg_core.range
+    // would become wx+b value
+
+    double tempArr[5] = {0};
+    for (int col_num = 0; col_num < 5; col_num++)
+    {
+        tempArr[col_num] += arg_core._ADCvalueN5N6[i] - arg_core._ADCbias[i];
+        for (int row_num = 0; row_num < 5; row_num++)
+        {
+            tempArr[col_num] += (-1) * arg_neurons._preNeuronValue[row_num] * arg_core._ref[row_num][col_num];
+        }
+
+        // Add bias
+        if (arg_core._targetBias[row_num][col_num] != 0)
+        {
+            tempArr[col_num] += arg_core._range * arg_core._targetBias[row_num][col_num];
+        }
+
+        arg_neurons._postNeuronValue[col_num] = tempArr[col_num] / arg_core._range;
+    }
+}
+
 void printer(char *name, double value)
 {
     Serial.print("name: ");
@@ -1407,6 +1472,48 @@ void printADCgndValue(synapseArray5by5 &arg_core)
         }
         Serial.println(" ");
     }
+    Serial.println("-------------------");
+}
+
+void printADCrefValue(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC REF value print");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._ref[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+    Serial.println("-------------------");
+}
+
+void printLayerPreNeuronValue(neuronLayer &arg_neurons)
+{
+    Serial.println("-------------------");
+    Serial.println("Pre Neuron Values ");
+    for (int i = 0; i < 5; i++)
+    {
+        Serial.print(arg_neurons._preNeuronValue[i]);
+        Serial.print(" ");
+    }
+    Serial.println(" ");
+    Serial.println("-------------------");
+}
+
+void printLayerPostNeuronValue(neuronLayer &arg_neurons)
+{
+    Serial.println("-------------------");
+    Serial.println("Post Neuron Values ");
+    for (int i = 0; i < 5; i++)
+    {
+        Serial.print(arg_neurons._postNeuronValue[i]);
+        Serial.print(" ");
+    }
+    Serial.println(" ");
     Serial.println("-------------------");
 }
 

@@ -28,6 +28,7 @@ public:
     int _mid[5][5];
     int _max[5][5];
     int _gnd[5][5];
+    int _ref[5][5];
 
     // input
     int _WL[5];
@@ -37,13 +38,15 @@ public:
     int _ADCvalueN5[5];
     int _ADCvalueN6[5];
     int _ADCvalueN5N6[5];
+    int _ADCbias[5];
 
     // weight matrix
-    int initialWeight[5][5];
-    int targetWeight[5][5];
-    int targetBias[5][5];
+    int _weight[5][5];
+    int _initialWeight[5][5];
+    int _targetWeight[5][5];
+    int _targetBias[5][5];
 
-    int range;
+    int _range;
 
     // (SGD) Stochastic Gradient Descent
     int p[5];
@@ -57,6 +60,8 @@ public:
     // synapseArray5by5(const std::string &initial_weight_path, const std::string &target_weight_path);
     ~synapseArray5by5();
 
+    void setRange(int &range);
+
     void setWLPulseWidth(int &WL0, int &WL1, int &WL2, int &WL3, int &WL4);
     void setADCvalueTemp(int ADC_0, int ADC_1, int ADC_2, int ADC_3, int ADC_4);
     void setADCvalueN5();
@@ -67,7 +72,10 @@ public:
     void setADCmidValue(int rowNum);
     void setADCmaxValue(int rowNum);
     void setADCgndValue(int rowNum);
+    void setADCrefValue();
+    void setADCbiasValue();
 
+    void setWeightToInitialWeight();
     void setInitialWeight();
     void setTargetWeight();
     void setTargetBias();
