@@ -48,7 +48,7 @@ void neuronLayer::sigmoidActivation()
 {
     for (int i = 0; i < 5; i++)
     {
-        this->_postNeuronActivationValue[i] = this->sigmoidActivFunc(this->_postNeuronValue);
+        this->_postNeuronActivationValue[i] = this->sigmoidActivFunc(this->_postNeuronValue[i]);
     }
 }
 //--------------------------------------------------------------
@@ -56,7 +56,7 @@ void neuronLayer::tanhActivation()
 {
     for (int i = 0; i < 5; i++)
     {
-        this->_postNeuronActivationValue[i] = this->tanhActivFunc(this->_postNeuronValue);
+        this->_postNeuronActivationValue[i] = this->tanhActivFunc(this->_postNeuronValue[i]);
     }
 }
 //--------------------------------------------------------------

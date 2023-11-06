@@ -558,7 +558,7 @@ void loop()
         for (int rowNum = 0; rowNum < 5; rowNum++)
         {
             Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-            core.setADCbiasValue(rowNum);
+            core.setADCnoiseValue(rowNum);
         }
 
         Serial.println("--------------------------------------------------------- ARRAY BIAS END");
@@ -1373,10 +1373,10 @@ void referencing(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
     double tempArr[5] = {0};
     for (int col_num = 0; col_num < 5; col_num++)
     {
-        tempArr[col_num] += arg_core._ADCvalueN5N6[i] - arg_core._ADCbias[i];
-        for (int row_num = 0; row_num < 5; row_num++)
+        tempArr[col_num] += arg_core._ADCvalueN5N6[col_num] for (int row_num = 0; row_num < 5; row_num++)
         {
             tempArr[col_num] += (-1) * arg_neurons._preNeuronValue[row_num] * arg_core._ref[row_num][col_num];
+            tempArr[col_num] += (-1) * arg_core._noise[row_num][col_num];
         }
 
         // Add bias

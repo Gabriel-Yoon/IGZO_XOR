@@ -28,6 +28,7 @@ public:
     int _mid[5][5];
     int _max[5][5];
     int _gnd[5][5];
+    int _noise[5][5];
     int _ref[5][5];
 
     // input
@@ -72,8 +73,8 @@ public:
     void setADCmidValue(int rowNum);
     void setADCmaxValue(int rowNum);
     void setADCgndValue(int rowNum);
+    void setADCnoiseValue(int rowNum);
     void setADCrefValue();
-    void setADCbiasValue();
 
     void setWeightToInitialWeight();
     void setInitialWeight();

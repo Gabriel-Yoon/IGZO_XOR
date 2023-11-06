@@ -14,7 +14,9 @@ synapseArray5by5::synapseArray5by5()
             this->_min[i][j] = 0;
             this->_mid[i][j] = 0;
             this->_max[i][j] = 0;
+            this->_gnd[i][j] = 0;
             this->_ref[i][j] = 0;
+            this->_noise[i][j] = 0;
 
             this->_weight[i][j] = 0;
             this->_initialWeight[i][j] = 0;
@@ -109,11 +111,23 @@ void synapseArray5by5::setADCgndValue(int rowNum)
     }
 }
 //--------------------------------------------------------------
-void synapseArray5by5::setADCbiasValue()
+void synapseArray5by5::setADCnoiseValue(int rowNum)
 {
     for (int i = 0; i < 5; i++)
     {
-        this->_ADCbias[i] = this->_ADCvalueN5N6[i];
+        this->_noise[rowNum][i] = this->_ADCvalueN5N6[i];
+    }
+}
+//--------------------------------------------------------------
+void synapseArray5by5::setADCrefValue()
+{
+    // Synchronize
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            this->_ref[i][j] = this->_mid[i][j] - this->_range * this->_weight[i][j];
+        }
     }
 }
 //--------------------------------------------------------------
@@ -244,18 +258,6 @@ void synapseArray5by5::setTargetBias()
         for (int j = 0; j < 5; j++)
         {
             this->_targetBias[i][j] = arr[i][j];
-        }
-    }
-}
-//--------------------------------------------------------------
-void synapseArray5by5::setADCrefValue()
-{
-    // Synchronize
-    for (int i = 0; i < 5; i++)
-    {
-        for (int j = 0; j < 5; j++)
-        {
-            this->_ref[i][j] = this->_mid[i][j] - this->_range * this->_weight[i][j];
         }
     }
 }
