@@ -1378,12 +1378,12 @@ void referencing(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
         {
             tempArr[col_num] += (-1) * arg_neurons._preNeuronValue[row_num] * arg_core._ref[row_num][col_num];
             tempArr[col_num] += (-1) * arg_core._noise[row_num][col_num];
-        }
 
-        // Add bias
-        if (arg_core._targetBias[row_num][col_num] != 0)
-        {
-            tempArr[col_num] += arg_core._range * arg_core._targetBias[row_num][col_num];
+            // Add bias
+            if (arg_core._targetBias[row_num][col_num] != 0)
+            {
+                tempArr[col_num] += arg_core._range * arg_core._targetBias[row_num][col_num];
+            }
         }
 
         arg_neurons._postNeuronValue[col_num] = tempArr[col_num] / arg_core._range;
