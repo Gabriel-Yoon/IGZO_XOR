@@ -613,8 +613,16 @@ void loop()
             inputLayer._preNeuronValue[3] = 0;
             inputLayer._preNeuronValue[4] = 0.5;
             FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
+            Serial.println("Obtained ADC Value after input->hidden FF");
+            printADCN5N6value(core);
+
             referencing(inputLayer, core);
+            Serial.println("Referenced Value after input->hidden FF");
+            printLayerPostNeuronValue(inputLayer);
+
             inputLayer.sigmoidActivation();
+            printLayerPostNeuronActivationValue(inputLayer);
+
             hiddenLayer.syncPostToPreNeuronValues(inputLayer);
             printLayerPreNeuronValue(hiddenLayer);
 
@@ -1505,6 +1513,19 @@ void printLayerPreNeuronValue(neuronLayer &arg_neurons)
     Serial.println("-------------------");
 }
 
+void printLayerPreNeuronActivationValue(neuronLayer &arg_neurons)
+{
+    Serial.println("-------------------");
+    Serial.println("Pre Neuron Activation Values ");
+    for (int i = 0; i < 5; i++)
+    {
+        Serial.print(arg_neurons._preNeuronActivationValue[i]);
+        Serial.print(" ");
+    }
+    Serial.println(" ");
+    Serial.println("-------------------");
+}
+
 void printLayerPostNeuronValue(neuronLayer &arg_neurons)
 {
     Serial.println("-------------------");
@@ -1512,6 +1533,19 @@ void printLayerPostNeuronValue(neuronLayer &arg_neurons)
     for (int i = 0; i < 5; i++)
     {
         Serial.print(arg_neurons._postNeuronValue[i]);
+        Serial.print(" ");
+    }
+    Serial.println(" ");
+    Serial.println("-------------------");
+}
+
+void printLayerPostNeuronActivationValue(neuronLayer &arg_neurons)
+{
+    Serial.println("-------------------");
+    Serial.println("Post Neuron Activation Values ");
+    for (int i = 0; i < 5; i++)
+    {
+        Serial.print(arg_neurons._postNeuronActivationValue[i]);
         Serial.print(" ");
     }
     Serial.println(" ");
