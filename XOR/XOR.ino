@@ -540,29 +540,33 @@ void loop()
         }
         // ----------------------------------------------------- GROUNDING TEST END
 
-        // 4. ARRAY BIAS ------------------------------------------------------
-        Serial.println("4. ARRAY BIAS ----------------------------------------------------------");
-
-        // Condition Setup
-        pulseWidth = 0;
-        preEnableTime = 1;
-        postEnableTime = 1;
-        setNum = 10;
-        readPeriod = 1000;
-        zeroTime = 1;
-        readDelay = 1;
-        readTime = 0;
-        readSetTime = 1;
-        updateNum = 1000;
-
-        for (int rowNum = 0; rowNum < 5; rowNum++)
+        // 4. ARRAY NOISE -----------------------------------------------------
+        bool enable_noise = false;
+        if (enable_noise)
         {
-            Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-            core.setADCnoiseValue(rowNum);
-        }
+            Serial.println("4. ARRAY NOISE ---------------------------------------------------------");
 
-        Serial.println("--------------------------------------------------------- ARRAY BIAS END");
-        // ----------------------------------------------------- ARRAY BIAS
+            // Condition Setup
+            pulseWidth = 0;
+            preEnableTime = 1;
+            postEnableTime = 1;
+            setNum = 10;
+            readPeriod = 1000;
+            zeroTime = 1;
+            readDelay = 1;
+            readTime = 0;
+            readSetTime = 1;
+            updateNum = 1000;
+
+            for (int rowNum = 0; rowNum < 5; rowNum++)
+            {
+                Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                core.setADCnoiseValue(rowNum);
+            }
+
+            Serial.println("-------------------------------------------------------- ARRAY NOISE END");
+        }
+        // ---------------------------------------------------- ARRAY NOISE
 
         Serial.println("************************************ ARRAY INITIALIZE SAVE ADC VALUE END");
         // ************************************ ARRAY INITIALIZE SAVE ADC VALUE END
