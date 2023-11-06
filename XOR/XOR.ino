@@ -598,6 +598,11 @@ void loop()
             {
                 for (int j = 0; j < 5; j++)
                 {
+                    Serial.print("mid value : ");
+                    Serial.print(core._mid[j][i]);
+                    Serial.print(" neuron value : ");
+                    Serial.print(inputLayer._preNeuronValue[i]);
+                    Serial.println("");
                     tempArr[i] += core._mid[j][i] * inputLayer._preNeuronValue[i];
                 }
                 Serial.print(tempArr[i]);
