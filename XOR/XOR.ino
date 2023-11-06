@@ -541,7 +541,7 @@ void loop()
         // ----------------------------------------------------- GROUNDING TEST END
 
         // 4. ARRAY NOISE -----------------------------------------------------
-        bool enable_noise = false;
+        bool enable_noise = true;
         if (enable_noise)
         {
             Serial.println("4. ARRAY NOISE ---------------------------------------------------------");
@@ -603,6 +603,7 @@ void loop()
         */
 
         // EPOCH ---------------------------------------------------------
+        // core.setRange(100);
         epoch = 10;
         for (int i = 0; i < epoch; i++)
         {

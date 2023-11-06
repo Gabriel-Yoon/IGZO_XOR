@@ -2,6 +2,8 @@
 
 synapseArray5by5::synapseArray5by5()
 {
+    this->_range = 100;
+
     for (int i = 0; i < 5; i++)
     {
         this->_WL[i] = 0;
