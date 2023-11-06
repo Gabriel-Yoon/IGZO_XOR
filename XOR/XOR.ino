@@ -592,7 +592,7 @@ void loop()
             printADCN5N6value(core);
 
             // theoretically,
-            double tempArr[5];
+            double tempArr[5] = {0};
             Serial.println("Theoretically ADC values : ");
             for (int i = 0; i < 5; i++)
             {
@@ -603,6 +603,7 @@ void loop()
                 Serial.print(tempArr[i]);
                 Serial.print(" ");
             }
+
             Serial.println("");
         }
 
