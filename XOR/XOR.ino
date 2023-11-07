@@ -611,13 +611,15 @@ void loop()
             Serial.print("epoch = ");
             Serial.println(i + 1);
 
+            core.setADCrefValue();
+
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
-            inputLayer._preNeuronValue[0] = 0.2;
+            inputLayer._preNeuronValue[0] = 1;
             inputLayer._preNeuronValue[1] = 0;
-            inputLayer._preNeuronValue[2] = 0.3;
+            inputLayer._preNeuronValue[2] = 1;
             inputLayer._preNeuronValue[3] = 0;
-            inputLayer._preNeuronValue[4] = 0.5;
+            inputLayer._preNeuronValue[4] = 0;
 
             // FF: input->hidden
             FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
@@ -1372,18 +1374,6 @@ void Depression(int *N3_0, int *N3_1, int *N3_2, int *N3_3, int *N3_4, int *N4_0
         PIOC->PIO_CODR = n3_clear;           // N3 clear
         delayMicroseconds(zero_time);
     }
-}
-
-double sigmoidActivFunc(double &x)
-{
-    return 1.0 / (1.0 + std::exp(-x));
-}
-
-double tanhActivFunc(double &x)
-{
-    double ex = std::exp(x);
-    double enx = std::exp(-x);
-    return (ex - enx) / (ex + enx);
 }
 
 double BinaryCrossentropy(double &y_hat, double &y)
