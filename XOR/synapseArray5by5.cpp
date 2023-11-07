@@ -2,7 +2,7 @@
 
 synapseArray5by5::synapseArray5by5()
 {
-    this->_range = 100;
+    this->_range = 200;
 
     for (int i = 0; i < 5; i++)
     {
@@ -137,7 +137,7 @@ void synapseArray5by5::setADCrefValue()
     {
         for (int j = 0; j < 5; j++)
         {
-            this->_ref[i][j] = this->_mid[i][j] - this->_range * this->_weight[i][j];
+            this->_ref[i][j] = this->_mid[i][j] - (int)round(this->_range * this->_weight[i][j]);
         }
     }
 }

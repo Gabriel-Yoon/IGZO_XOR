@@ -24,6 +24,7 @@ class synapseArray5by5
 {
     /*---------------------fields-----------------*/
 public:
+    // ADC values
     int _min[5][5];
     int _mid[5][5];
     int _max[5][5];
@@ -31,22 +32,29 @@ public:
     int _noise[5][5];
     int _ref[5][5];
 
-    // input
+    // input (obsolete)
     int _WL[5];
 
-    // output
+    // ADC output saved by read_scaling
     int _ADCvalueTemp[5];
     int _ADCvalueN5[5];
     int _ADCvalueN6[5];
     int _ADCvalueN5N6[5];
     int _ADCbias[5];
 
-    // weight matrix
-    int _weight[5][5];
-    int _initialWeight[5][5];
-    int _targetWeight[5][5];
-    int _targetBias[5][5];
+    // weight matrix: w values in y = wx +b
+    double _weight[5][5];
+    double _initialWeight[5][5];
+    double _targetWeight[5][5];
+    double _targetBias[5][5];
 
+    // Gradient : Used in BackPropagation Update
+    double _dW1[5][5];
+    double _dW2[5][5];
+    double _dH[5];
+    double _dZ[5];
+
+    // referencin range
     int _range;
 
     // (SGD) Stochastic Gradient Descent

@@ -681,10 +681,11 @@ void loop()
                 Serial.println("Wrong");
             }
 
-            // loss, accuracy calculation
+            // loss, error, accuracy calculation
             loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
             Serial.print("loss: ");
             Serial.println(loss);
+            error = outputLayer._preNeuronValue[1] - solution_double;
 
             // BP: output->hidden
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
