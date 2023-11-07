@@ -604,7 +604,7 @@ void loop()
 
         // EPOCH ---------------------------------------------------------
 
-        epoch = 2;
+        epoch = 10;
         core.initialize();
         // core.setRange(100);
 
@@ -614,11 +614,21 @@ void loop()
             Serial.print("epoch = ");
             Serial.println(i + 1);
 
+            int X1 = rand() % 2;
+            int X2 = rand() % 2;
+
+            int answer = X1 ^ X2;
+            int solution;
+            Serial.print(" XOR Problem of ");
+            Serial.print(X1);
+            Serial.print(" and ");
+            Serial.print(X2);
+
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
-            inputLayer._preNeuronValue[0] = 1;
+            inputLayer._preNeuronValue[0] = X1;
             inputLayer._preNeuronValue[1] = 0;
-            inputLayer._preNeuronValue[2] = 1;
+            inputLayer._preNeuronValue[2] = X2;
             inputLayer._preNeuronValue[3] = 0;
             inputLayer._preNeuronValue[4] = 0;
 
@@ -667,6 +677,16 @@ void loop()
             Serial.println("XOR Problem Solving FF Result");
             Serial.print("output value : ");
             Serial.println(outputLayer._preNeuronValue[0]);
+
+            solution = 1 if outputLayer._preNeuronValue[0] > 0.5 else 0;
+            if (answer == solution)
+            {
+                Serial.println("Correct");
+            }
+            else
+            {
+                Serial.println("Wrong");
+            }
 
             // obtained ADC value
             // - referencing
