@@ -689,10 +689,10 @@ void loop()
             }
 
             // loss, accuracy calculation
-            loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution);
+            loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], (double)solution);
 
             // BP: output->hidden
-            Backpropagation(readTime, readSetTime, readDelay, outputLayer, core);
+            BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
             Serial.println("Obtained ADC Value after output->hidden BP");
             printADCN5N6value(core);
 
@@ -711,20 +711,19 @@ void loop()
             hiddenLayer._postNeuronValue[3] = 0;
             hiddenLayer._postNeuronValue[4] = outputLayer._preNeuronActivationValue[4];
 
-            // Modify here
             Serial.println("PreNeuron Value of hidden layer");
             printLayerPreNeuronValue(hiddenLayer);
 
             BackPropagation(readTime, readSetTime, readDelay, hiddenLayer, core);
-            Serial.println("Obtained ADC Value after hidden->output FF");
+            Serial.println("Obtained ADC Value after hidden->input FF");
             printADCN5N6value(core);
 
             referencing_FF(hiddenLayer, core);
-            Serial.println("Referenced Value after hidden->output FF");
+            Serial.println("Referenced Value after hidden->input FF");
             printLayerPreNeuronValue(hiddenLayer);
 
             hiddenLayer.sigmoidActivationPreNeurons();
-            Serial.println("Activation Value after hidden->output FF");
+            Serial.println("Activation Value after hidden->input FF");
             printLayerPreNeuronActivationValue(inputLayer);
 
             outputLayer._preNeuronValue[0] = 0;
