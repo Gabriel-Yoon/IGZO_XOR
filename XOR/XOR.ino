@@ -635,12 +635,17 @@ void loop()
             Serial.println("Activation Value after input->hidden FF");
             printLayerPostNeuronActivationValue(inputLayer);
 
-            hiddenLayer.syncPostToPreNeuronValues(inputLayer);
+            // FF: hidden->output
+            // There is a hidden error here. the values that should be zero could have a possibility of not having 0
+            hiddenLayer._preNeuronValue[0] = 0;
+            hiddenLayer._preNeuronValue[1] = inputLayer._postNeuronActivationValue[0];
+            hiddenLayer._preNeuronValue[2] = 0;
+            hiddenLayer._preNeuronValue[3] = inputLayer._postNeuronActivationValue[2];
+            hiddenLayer._preNeuronValue[4] = inputLayer._postNeuronActivationValue[4];
+
             Serial.println("PreNeuron Value of hidden layer");
             printLayerPreNeuronValue(hiddenLayer);
 
-            // FF: hidden->output
-            // There is a hidden error here. the values that should be zero could have a possibility of not having 0
             FeedForward(readTime, readSetTime, readDelay, hiddenLayer, core);
             Serial.println("Obtained ADC Value after hidden->output FF");
             printADCN5N6value(core);
@@ -653,9 +658,15 @@ void loop()
             Serial.println("Activation Value after hidden->output FF");
             printLayerPostNeuronActivationValue(hiddenLayer);
 
-            outputLayer.syncPostToPreNeuronValues(hiddenLayer);
-            Serial.println("PreNeuron Value of output layer");
-            printLayerPreNeuronValue(outputLayer);
+            outputLayer._preNeuronValue[0] = hiddenLayer._postNeuronActivationValue[1];
+            outputLayer._preNeuronValue[1] = 0;
+            outputLayer._preNeuronValue[2] = 0;
+            outputLayer._preNeuronValue[3] = 0;
+            outputLayer._preNeuronValue[4] = 0;
+
+            Serial.println("XOR Problem Solving FF Result");
+            Serial.print("output value : ");
+            Serial.println(outputLayer._preNeuronValue[0]);
 
             // obtained ADC value
             // - referencing
