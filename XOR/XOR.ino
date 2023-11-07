@@ -96,14 +96,6 @@ neuronLayer inputLayer;
 neuronLayer hiddenLayer;
 neuronLayer outputLayer;
 
-int target;
-double target_real;
-
-double X[5]; // X0, X1, X2, X3, X4
-double Y[5];
-int X0_real, X1_real;
-int pulseWidthWL[5];
-
 double p[5]; // p0, p1, p2
 double q[5]; // q0, q1, q2, q3, q4
 int P[5];
@@ -112,7 +104,6 @@ int result[5];
 
 double error, loss;
 double learning_rate_partial;
-double b3, b4;
 
 // Export
 double ErrorEpochRecorder[100];
@@ -618,6 +609,7 @@ void loop()
             int X2 = rand() % 2;
 
             int solution = X1 ^ X2;
+            double solution_double = (solution == 0) ? 0.0 : 1.0;
             int answer;
             Serial.print(" XOR Problem of ");
             Serial.print(X1);
@@ -689,7 +681,7 @@ void loop()
             }
 
             // loss, accuracy calculation
-            loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], (double)solution);
+            loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
 
             // BP: output->hidden
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
