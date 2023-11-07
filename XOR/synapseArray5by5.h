@@ -61,6 +61,7 @@ public:
     // synapseArray5by5(const std::string &initial_weight_path, const std::string &target_weight_path);
     ~synapseArray5by5();
 
+    void initialize();
     void setRange(int &range);
 
     void setWLPulseWidth(int &WL0, int &WL1, int &WL2, int &WL3, int &WL4);

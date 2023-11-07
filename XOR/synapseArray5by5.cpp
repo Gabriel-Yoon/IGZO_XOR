@@ -32,6 +32,15 @@ synapseArray5by5::~synapseArray5by5()
 {
 }
 //--------------------------------------------------------------
+void synapseArray5by5::initialize()
+{
+    this->setInitialWeight();
+    this->setTargetWeight();
+    this->setTargetBias();
+    this->setWeightToInitialWeight();
+    this->setADCrefValue();
+}
+//--------------------------------------------------------------
 void synapseArray5by5::setRange(int &range)
 {
     this->_range = range;

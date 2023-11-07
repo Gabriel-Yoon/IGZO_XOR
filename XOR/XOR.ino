@@ -603,16 +603,16 @@ void loop()
         */
 
         // EPOCH ---------------------------------------------------------
-        // core.setRange(100);
+
         epoch = 2;
+        core.initialize();
+        core.setRange(100);
+
         for (int i = 0; i < epoch; i++)
         {
             Serial.println("// ---------------------------------------------------------");
             Serial.print("epoch = ");
             Serial.println(i + 1);
-
-            core.setWeightToInitialWeight();
-            core.setADCrefValue();
 
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
