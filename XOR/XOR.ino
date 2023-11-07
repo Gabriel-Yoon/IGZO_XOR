@@ -611,6 +611,7 @@ void loop()
             Serial.print("epoch = ");
             Serial.println(i + 1);
 
+            core.setWeightToInitialWeight();
             core.setADCrefValue();
 
             // double testValue[5] = {1, 0, 1, 0, 1};
