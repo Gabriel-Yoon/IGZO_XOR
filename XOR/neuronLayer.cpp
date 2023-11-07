@@ -80,6 +80,6 @@ void neuronLayer::copyPreToPostNeuronValues()
 {
     for (int i = 0; i < 5; i++)
     {
-        this->_postNeuronActivationValue[i] = this->_preNeuronValue[i];
+        this->_postNeuronValue[i] = this->_preNeuronValue[i];
     }
 }
