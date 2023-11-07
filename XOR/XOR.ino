@@ -1073,35 +1073,35 @@ void read_scaling_multiple_post(int read_time, int read_delay, neuronLayer &arg_
 
     for (int i = 0; i < read_time; i++)
     {
-        if (i < round(arg_neurons._postNeuronValue[0] * read_time))
+        if (i < round(arg_neurons._postNeuronActivationValue[0] * read_time))
             WL0[i] = wl_0;
         else
             WL0[i] = 0;
     }
     for (int i = 0; i < read_time; i++)
     {
-        if (i < round(arg_neurons._postNeuronValue[1] * read_time))
+        if (i < round(arg_neurons._postNeuronActivationValue[1] * read_time))
             WL1[i] = wl_1;
         else
             WL1[i] = 0;
     }
     for (int i = 0; i < read_time; i++)
     {
-        if (i < round(arg_neurons._postNeuronValue[2] * read_time))
+        if (i < round(arg_neurons._postNeuronActivationValue[2] * read_time))
             WL2[i] = wl_2;
         else
             WL2[i] = 0;
     }
     for (int i = 0; i < read_time; i++)
     {
-        if (i < round(arg_neurons._postNeuronValue[3] * read_time))
+        if (i < round(arg_neurons._postNeuronActivationValue[3] * read_time))
             WL3[i] = wl_3;
         else
             WL3[i] = 0;
     }
     for (int i = 0; i < read_time; i++)
     {
-        if (i < round(arg_neurons._postNeuronValue[4] * read_time))
+        if (i < round(arg_neurons._postNeuronActivationValue[4] * read_time))
             WL4[i] = wl_4;
         else
             WL4[i] = 0;
