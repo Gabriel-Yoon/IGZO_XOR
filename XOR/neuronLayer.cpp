@@ -52,6 +52,14 @@ void neuronLayer::sigmoidActivation()
     }
 }
 //--------------------------------------------------------------
+void neuronLayer::sigmoidActivationPreNeurons()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->_preNeuronActivationValue[i] = this->sigmoidActivFunc(this->_preNeuronValue[i]);
+    }
+}
+//--------------------------------------------------------------
 void neuronLayer::tanhActivation()
 {
     for (int i = 0; i < 5; i++)

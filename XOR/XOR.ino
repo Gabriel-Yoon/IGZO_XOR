@@ -604,7 +604,7 @@ void loop()
 
         // EPOCH ---------------------------------------------------------
 
-        epoch = 10;
+        epoch = 1;
         core.initialize();
         // core.setRange(100);
 
@@ -617,8 +617,8 @@ void loop()
             int X1 = rand() % 2;
             int X2 = rand() % 2;
 
-            int answer = X1 ^ X2;
-            int solution;
+            int solution = X1 ^ X2;
+            int answer;
             Serial.print(" XOR Problem of ");
             Serial.print(X1);
             Serial.print(" and ");
@@ -637,7 +637,7 @@ void loop()
             Serial.println("Obtained ADC Value after input->hidden FF");
             printADCN5N6value(core);
 
-            referencing(inputLayer, core);
+            referencing_FF(inputLayer, core);
             Serial.println("Referenced Value after input->hidden FF");
             printLayerPostNeuronValue(inputLayer);
 
@@ -660,7 +660,7 @@ void loop()
             Serial.println("Obtained ADC Value after hidden->output FF");
             printADCN5N6value(core);
 
-            referencing(hiddenLayer, core);
+            referencing_FF(hiddenLayer, core);
             Serial.println("Referenced Value after hidden->output FF");
             printLayerPostNeuronValue(hiddenLayer);
 
@@ -668,17 +668,17 @@ void loop()
             Serial.println("Activation Value after hidden->output FF");
             printLayerPostNeuronActivationValue(hiddenLayer);
 
-            outputLayer._preNeuronValue[0] = hiddenLayer._postNeuronActivationValue[1];
-            outputLayer._preNeuronValue[1] = 0;
+            outputLayer._preNeuronValue[0] = 0;
+            outputLayer._preNeuronValue[1] = hiddenLayer._postNeuronActivationValue[1];
             outputLayer._preNeuronValue[2] = 0;
             outputLayer._preNeuronValue[3] = 0;
             outputLayer._preNeuronValue[4] = 0;
 
             Serial.println("XOR Problem Solving FF Result");
             Serial.print("output value : ");
-            Serial.println(outputLayer._preNeuronValue[0]);
+            Serial.println(outputLayer._preNeuronValue[1]);
 
-            solution = (outputLayer._preNeuronValue[0] > 0.5) ? 1 : 0;
+            answer = (outputLayer._preNeuronValue[1] > 0.5) ? 1 : 0;
             if (answer == solution)
             {
                 Serial.println("Correct");
@@ -688,28 +688,51 @@ void loop()
                 Serial.println("Wrong");
             }
 
-            // obtained ADC value
-            // - referencing
-            // - bias
+            // loss, accuracy calculation
+            loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution);
 
-            // theoretically,
-            // double tempArr[5] = {0};
-            // Serial.println("Theoretically ADC values : ");
-            // for (int col_num = 0; col_num < 5; col_num++)
-            // {
-            //     for (int row_num = 0; row_num < 5; row_num++)
-            //     {
-            //         tempArr[col_num] += core._mid[row_num][col_num] * inputLayer._preNeuronValue[row_num];
-            //     }
-            //     Serial.print(tempArr[col_num]);
-            //     Serial.print(" ");
-            // }
-            // Serial.println("");
+            // BP: output->hidden
+            Backpropagation(readTime, readSetTime, readDelay, outputLayer, core);
+            Serial.println("Obtained ADC Value after output->hidden BP");
+            printADCN5N6value(core);
+
+            referencing_BP(outputLayer, core);
+            Serial.println("Referenced Value after output->hidden BP");
+            printLayerPostNeuronValue(outputLayer);
+
+            outputLayer.sigmoidActivationPreNeurons();
+            Serial.println("Activation Value after output->hidden BP");
+            printLayerPreNeuronActivationValue(outputLayer);
+
+            // BP: hidden->input
+            hiddenLayer._postNeuronValue[0] = outputLayer._preNeuronActivationValue[1];
+            hiddenLayer._postNeuronValue[1] = 0;
+            hiddenLayer._postNeuronValue[2] = outputLayer._preNeuronActivationValue[3];
+            hiddenLayer._postNeuronValue[3] = 0;
+            hiddenLayer._postNeuronValue[4] = outputLayer._preNeuronActivationValue[4];
+
+            // Modify here
+            Serial.println("PreNeuron Value of hidden layer");
+            printLayerPreNeuronValue(hiddenLayer);
+
+            BackPropagation(readTime, readSetTime, readDelay, hiddenLayer, core);
+            Serial.println("Obtained ADC Value after hidden->output FF");
+            printADCN5N6value(core);
+
+            referencing_FF(hiddenLayer, core);
+            Serial.println("Referenced Value after hidden->output FF");
+            printLayerPreNeuronValue(hiddenLayer);
+
+            hiddenLayer.sigmoidActivationPreNeurons();
+            Serial.println("Activation Value after hidden->output FF");
+            printLayerPreNeuronActivationValue(inputLayer);
+
+            outputLayer._preNeuronValue[0] = 0;
+            outputLayer._preNeuronValue[1] = hiddenLayer._postNeuronActivationValue[1];
+            outputLayer._preNeuronValue[2] = 0;
+            outputLayer._preNeuronValue[3] = 0;
+            outputLayer._preNeuronValue[4] = 0;
         }
-
-        // double inputLayerValues[5] = {rand() % 2, 0, rand() % 2, 0, 0};
-        // inputLayer.setPreNeuronValues(inputLayerValues);
-        // FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
 
         Serial.println("************************************************ XOR PROBLEM SOLVING END");
         // ************************************************ XOR PROBLEM SOLVING END
@@ -1045,6 +1068,105 @@ void read_scaling_multiple(int read_time, int read_delay, neuronLayer &arg_neuro
     //  return ADC_0;
 }
 
+void read_scaling_multiple_post(int read_time, int read_delay, neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
+{
+    int wl_0 = 1;
+    int wl_1 = 1 << 1;
+    int wl_2 = 1 << 2;
+    int wl_3 = 1 << 3;
+    int wl_4 = 1 << 6;
+    int ADC_1, ADC_2, ADC_3, ADC_4, ADC_0;
+    int WL[read_time];
+    int wl_clear = wl_0 | wl_1 | wl_2 | wl_3 | wl_4;
+    int WL0[read_time], WL1[read_time], WL2[read_time], WL3[read_time], WL4[read_time];
+
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._postNeuronValue[0] * read_time))
+            WL0[i] = wl_0;
+        else
+            WL0[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._postNeuronValue[1] * read_time))
+            WL1[i] = wl_1;
+        else
+            WL1[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._postNeuronValue[2] * read_time))
+            WL2[i] = wl_2;
+        else
+            WL2[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._postNeuronValue[3] * read_time))
+            WL3[i] = wl_3;
+        else
+            WL3[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        if (i < round(arg_neurons._postNeuronValue[4] * read_time))
+            WL4[i] = wl_4;
+        else
+            WL4[i] = 0;
+    }
+    for (int i = 0; i < read_time; i++)
+    {
+        WL[i] = WL0[i] | WL1[i] | WL2[i] | WL3[i] | WL4[i];
+    }
+
+    PIOB->PIO_CODR = 1 << 14; // CON
+    PIOA->PIO_SODR = 1 << 19; // DS
+    PIOB->PIO_SODR = 1 << 21; // CR
+
+    for (int i = 0; i < read_time; i++)
+    {
+        PIOD->PIO_SODR = WL[i];    // WL SET
+        PIOA->PIO_SODR = 1 << 7;   // DFF1 CLK HIGH
+        PIOA->PIO_CODR = 1 << 7;   // DFF1 CLK LOW
+        PIOD->PIO_CODR = wl_clear; // WL clear
+        delayMicroseconds(1);      //
+    }
+    for (int i = 0; i < read_delay; i++)
+    {
+        PIOD->PIO_SODR = 0;        //
+        PIOA->PIO_SODR = 1 << 7;   // DFF1 CLK HIGH
+        PIOA->PIO_CODR = 1 << 7;   // DFF1 CLK LOW
+        PIOD->PIO_CODR = wl_clear; // WL clear
+        delayMicroseconds(10);     //
+    }
+
+    PIOA->PIO_SODR = 1 << 7;  // DFF1 CLK HIGH
+    PIOA->PIO_CODR = 1 << 7;  // DFF1 CLK LOW
+    PIOA->PIO_CODR = 1 << 19; // DS ON
+    PIOB->PIO_SODR = 1 << 14; // CON OFF
+
+    ADC_0 = ADC->ADC_CDR[7];  // read data on A0
+    ADC_1 = ADC->ADC_CDR[6];  // read data on A1
+    ADC_2 = ADC->ADC_CDR[5];  // read data on A2
+    ADC_3 = ADC->ADC_CDR[4];  // read data on A3
+    ADC_4 = ADC->ADC_CDR[3];  // read data on A4
+    PIOB->PIO_CODR = 1 << 21; // CR
+
+    // Serial.print(ADC_0 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_1 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_2 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_3 / 4);
+    // Serial.print(",");
+    // Serial.print(ADC_4 / 4);
+
+    arg_core.setADCvalueTemp(ADC_0 / 4, ADC_1 / 4, ADC_2 / 4, ADC_3 / 4, ADC_4 / 4);
+    //  return ADC_0;
+}
+
 void GroundAllCells(int readTime, int readSetTime, int readDelay, int rowNum, synapseArray5by5 &arg_core)
 {
     int n1;
@@ -1170,6 +1292,58 @@ void FeedForward(int readTime, int readSetTime, int readDelay, neuronLayer &arg_
     PIOC->PIO_SODR = n1; // N1 SET
     delayMicroseconds(readSetTime);
     read_scaling_multiple(readTime, readDelay, arg_neurons, arg_core);
+    arg_core.setADCvalueN6();
+    PIOC->PIO_CODR = n1; // N1 Clear
+
+    arg_core.setADCvalueN5N6();
+}
+
+void BackPropagation(int readTime, int readSetTime, int readDelay, neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
+{
+    int n1;
+    int n3;
+
+    if (arg_neurons._postNeuronValue[0] != 0)
+    {
+        n1 = (1 << 12);
+        n3 = (1 << 17);
+    }
+    else if (arg_neurons._postNeuronValue[1] != 0)
+    {
+        n1 = (1 << 13);
+        n3 = (1 << 18);
+    }
+    else if (arg_neurons._postNeuronValue[2] != 0)
+    {
+        n1 = (1 << 14);
+        n3 = (1 << 19);
+    }
+    else if (arg_neurons._postNeuronValue[3] != 0)
+    {
+        n1 = (1 << 15);
+        n3 = (1 << 9);
+    }
+    else if (arg_neurons._postNeuronValue[4] != 0)
+    {
+        n1 = (1 << 16);
+        n3 = (1 << 8);
+    }
+
+    // Use N56
+    state_switch(4);
+    PIOC->PIO_SODR = n3; // N3 SET
+    delayMicroseconds(readSetTime);
+    read_scaling_multiple_post(readTime, readDelay, arg_neurons, arg_core);
+    arg_core.setADCvalueN5();
+    PIOC->PIO_CODR = n3; // N3 Clear
+
+    delayMicroseconds(20); // to separate N5 / N6 reads
+
+    // Serial.print("N6 - ");
+    state_switch(6);
+    PIOC->PIO_SODR = n1; // N1 SET
+    delayMicroseconds(readSetTime);
+    read_scaling_multiple_post(readTime, readDelay, arg_neurons, arg_core);
     arg_core.setADCvalueN6();
     PIOC->PIO_CODR = n1; // N1 Clear
 
@@ -1413,7 +1587,7 @@ double BinaryCrossentropy(double &y_hat, double &y)
     return -y * log(y_hat) + (1 - y) * log(1 - y_hat);
 }
 
-void referencing(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
+void referencing_FF(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
 {
     // Purpose : get postNeuronValue
     // ADC - x *new_ref -adc_bias
@@ -1438,6 +1612,35 @@ void referencing(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
         }
 
         arg_neurons._postNeuronValue[col_num] = tempArr[col_num] / arg_core._range;
+    }
+}
+
+void referencing_BP(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
+{
+    // Purpose : get postNeuronValue
+    // ADC - x *new_ref -adc_bias
+    // adcvalueN5N6[i] - arg_core._ref[i][j] - arg_core._ADCbias[i]
+    // divided by arg_core.range
+    // would become wx+b value
+
+    double tempArr[5] = {0};
+
+    for (int row_num = 0; row_num < 5; row_num++)
+    {
+        tempArr[row_num] += arg_core._ADCvalueN5N6[row_num];
+        for (int col_num = 0; col_num < 5; col_num++)
+        {
+            tempArr[row_num] += (-1) * arg_neurons._postNeuronValue[col_num] * arg_core._ref[row_num][col_num];
+            // tempArr[col_num] += (-1) * arg_core._noise[row_num][col_num];
+
+            // Add bias
+            if (arg_core._targetBias[row_num][col_num] != 0)
+            {
+                tempArr[row_num] += arg_core._range * arg_core._targetBias[row_num][col_num];
+            }
+        }
+
+        arg_neurons._preNeuronValue[row_num] = tempArr[row_num] / arg_core._range;
     }
 }
 
