@@ -606,7 +606,7 @@ void loop()
 
         epoch = 2;
         core.initialize();
-        core.setRange(100);
+        // core.setRange(100);
 
         for (int i = 0; i < epoch; i++)
         {
