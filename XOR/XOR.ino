@@ -669,6 +669,7 @@ void loop()
             Serial.println("XOR Problem Solving FF Result");
             Serial.print("output value : ");
             Serial.println(outputLayer._preNeuronValue[1]);
+            outputLayer.copyPreToPostNeuronValues();
 
             answer = (outputLayer._preNeuronValue[1] > 0.5) ? 1 : 0;
             if (answer == solution)

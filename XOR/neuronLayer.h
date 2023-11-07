@@ -32,6 +32,7 @@ public:
     void sigmoidActivationPreNeurons();
     void tanhActivation();
     void syncPostToPreNeuronValues(neuronLayer &arg_neurons);
+    void copyPreToPostNeuronValues();
 };
 //**************************************************************************************************************//
 #endif

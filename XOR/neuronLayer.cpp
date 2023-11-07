@@ -75,3 +75,11 @@ void neuronLayer::syncPostToPreNeuronValues(neuronLayer &arg_neurons)
         this->_preNeuronValue[i] = arg_neurons._postNeuronActivationValue[i];
     }
 }
+//--------------------------------------------------------------
+void neuronLayer::copyPreToPostNeuronValues()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->_postNeuronActivationValue[i] = this->_preNeuronValue[i];
+    }
+}
