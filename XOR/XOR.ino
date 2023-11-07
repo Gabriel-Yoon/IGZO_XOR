@@ -678,7 +678,7 @@ void loop()
             Serial.print("output value : ");
             Serial.println(outputLayer._preNeuronValue[0]);
 
-            solution = 1 if outputLayer._preNeuronValue[0] > 0.5 else 0;
+            solution = (outputLayer._preNeuronValue[0] > 0.5) ? 1 : 0;
             if (answer == solution)
             {
                 Serial.println("Correct");
