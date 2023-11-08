@@ -736,6 +736,7 @@ void loop()
             Serial.println("Obtained ADC Value after output->hidden BP");
             printADCN5N6value(core);
             referencing_BP(outputLayer, core);
+            core.setdHfromADCvalue();
 
             // dZ1 = dH x input.postActiv x(1 - input.postActiv);
             for (int i = 0; i < 5; i++)
