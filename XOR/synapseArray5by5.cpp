@@ -11,6 +11,10 @@ synapseArray5by5::synapseArray5by5()
         this->_ADCvalueN6[i] = 0;
         this->_ADCvalueN5N6[i] = 0;
         this->_ADCbias[i] = 0;
+
+        this->_dH[i] = 0;
+        this->_dZ[i] = 0;
+
         for (int j = 0; j < 5; j++)
         {
             this->_min[i][j] = 0;
@@ -24,6 +28,9 @@ synapseArray5by5::synapseArray5by5()
             this->_initialWeight[i][j] = 0;
             this->_targetWeight[i][j] = 0;
             this->_targetBias[i][j] = 0;
+
+            this->_dW1[i][j] = 0;
+            this->_dW2[i][j] = 0;
         }
     }
 }
@@ -270,5 +277,13 @@ void synapseArray5by5::setTargetBias()
         {
             this->_targetBias[i][j] = arr[i][j];
         }
+    }
+}
+//--------------------------------------------------------------
+void synapseArray5by5::setdHfromADCvalue()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->_dH[i] = this->_ADCvalueN5N6[i];
     }
 }

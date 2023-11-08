@@ -75,7 +75,7 @@ SAM3X-Arduino Pin Mapping
 // FIELDS *********************************************
 
 #define MAX 120          // Read pulse set까지의 시간을 위하여
-#define Bit_length 10    // update할 때의 timing을 맞추기 위해서 따로 정의
+#define Bit_length 300   // update할 때의 timing을 맞추기 위해서 따로 정의
 #define VAR_NUM 10       // 총 Input variable 수를 정의할 것
 #define learning_rate 30 // 1st layer의 learning rate 정의
 #define amplification_factor 8
@@ -98,8 +98,8 @@ neuronLayer outputLayer;
 
 double p[5]; // p0, p1, p2
 double q[5]; // q0, q1, q2, q3, q4
-int P[5];
-int Q[5];
+int P1[5], P2[5];
+int Q1[5], Q2[5];
 int result[5];
 
 double error, loss;
@@ -687,46 +687,88 @@ void loop()
             Serial.println(loss);
             error = outputLayer._preNeuronValue[1] - solution_double;
 
-            // BP: output->hidden
+            // Weight Update 1 : Output -> Hidden Layer ----------------------------
+            /* Weight Update
+
+                    Q2[0] --
+
+                    Q2[1] --             **(1,1)
+
+                    Q2[2] --
+
+                    Q2[3] --             **(3,1)
+
+                    Q2[4] --             **(4,1)
+
+                                |      |       |       |       |
+                                P2[0]  P2[1]   P2[2]   P2[3]   P2[4]
+
+            */
+
+            // Weight Update 2 : Hidden -> Visible Layer -----------------------------
+            /*
+
+                        Q1[0] --     **              **              **
+
+                        Q1[1] --
+
+                        Q1[2] --     **              **              **
+
+                        Q1[3] --
+
+                        Q1[4] --
+
+                                    |      |       |       |       |
+                                    P1[0]  P1[1]   P1[2]   P1[3]   P1[4]
+
+            */
+
+            get_dW2(hiddenLayer, core, double error);
+            // BP: output->hidden to get dH (=W2 x error)
+
+            outputLayer._postNeuronValue[0] = 0;
+            outputLayer._postNeuronValue[1] = error;
+            outputLayer._postNeuronValue[2] = 0;
+            outputLayer._postNeuronValue[3] = 0;
+            outputLayer._postNeuronValue[4] = 0;
+
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
             Serial.println("Obtained ADC Value after output->hidden BP");
             printADCN5N6value(core);
-
             referencing_BP(outputLayer, core);
-            Serial.println("Referenced Value after output->hidden BP");
-            printLayerPreNeuronValue(outputLayer);
 
-            outputLayer.sigmoidActivationPreNeurons();
-            Serial.println("Activation Value after output->hidden BP");
-            printLayerPreNeuronActivationValue(outputLayer);
+            dZ1 = dH x input.postActiv x(1 - input.postActiv);
+            for (int i = 0; i < 5; i++)
+            {
+                core._dZ[i] = core._dH[i] * inputLayer._postNeuronActivationValue[i] * (1 - inputLayer._postNeuronActivationValue[i]);
+                for (int j = 0; j < 5; j++)
+                {
+                    core._dW1[i][j] = inputLayer._preNeuronValue[i] * core._dZ[j];
+                }
+            }
 
-            // BP: hidden->input
-            hiddenLayer._postNeuronValue[0] = outputLayer._preNeuronActivationValue[1];
-            hiddenLayer._postNeuronValue[1] = 0;
-            hiddenLayer._postNeuronValue[2] = outputLayer._preNeuronActivationValue[3];
-            hiddenLayer._postNeuronValue[3] = 0;
-            hiddenLayer._postNeuronValue[4] = outputLayer._preNeuronActivationValue[4];
+            printdW1(core);
+            printdW2(core);
 
-            Serial.println("PreNeuron Value of hidden layer");
-            printLayerPreNeuronValue(hiddenLayer);
+            // Get P[] Q[]
+            for (row_num = 0; row_num < 5; row_num++)
+            {
+                // P[i] = core._dW2[i] *
+            }
 
-            BackPropagation(readTime, readSetTime, readDelay, hiddenLayer, core);
-            Serial.println("Obtained ADC Value after hidden->input FF");
-            printADCN5N6value(core);
-
-            referencing_FF(hiddenLayer, core);
-            Serial.println("Referenced Value after hidden->input FF");
-            printLayerPreNeuronValue(hiddenLayer);
-
-            hiddenLayer.sigmoidActivationPreNeurons();
-            Serial.println("Activation Value after hidden->input FF");
-            printLayerPreNeuronActivationValue(inputLayer);
-
-            outputLayer._preNeuronValue[0] = 0;
-            outputLayer._preNeuronValue[1] = hiddenLayer._postNeuronActivationValue[1];
-            outputLayer._preNeuronValue[2] = 0;
-            outputLayer._preNeuronValue[3] = 0;
-            outputLayer._preNeuronValue[4] = 0;
+            // Weight Update Finally!!
+            // 1. Potentiation and Depression
+            // Condition Setup
+            pulseWidth = 1;
+            preEnableTime = 1;
+            postEnableTime = 1;
+            setNum = 10;
+            readPeriod = 1000;
+            zeroTime = 1;
+            readDelay = 1;
+            readTime = 2000;
+            readSetTime = 1;
+            updateNum = 1000;
         }
 
         Serial.println("************************************************ XOR PROBLEM SOLVING END");
@@ -1639,6 +1681,13 @@ void referencing_BP(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
     }
 }
 
+void get_dW2(neuronLayer &arg_neurons, synapseArray5by5 &arg_core, double error)
+{
+    arg_core._dW2[1][1] = arg_neurons._preNeuronValue[1] * error;
+    arg_core._dW2[3][1] = arg_neurons._preNeuronValue[3] * error;
+    arg_core._dW2[4][1] = arg_neurons._preNeuronValue[4] * error;
+}
+
 void printer(char *name, double value)
 {
     Serial.print("name: ");
@@ -1807,6 +1856,36 @@ void printLayerPostNeuronActivationValue(neuronLayer &arg_neurons)
     }
     Serial.println(" ");
     Serial.println("-------------------");
+}
+
+void printdW1(synapseArray5by5 &arg_core)
+{
+    Serial.println("dW1 values print: ");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._dW1[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+    Serial.println(" ");
+}
+
+void printdW2(synapseArray5by5 &arg_core)
+{
+    Serial.println("dW2 values print: ");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._dW2[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+    Serial.println(" ");
 }
 
 void doubleArraySync(double *arr, double *temp)
