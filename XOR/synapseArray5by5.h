@@ -89,6 +89,8 @@ public:
     void setInitialWeight();
     void setTargetWeight();
     void setTargetBias();
+
+    void setdHfromADCvalue();
 };
 //**************************************************************************************************************//
 #endif

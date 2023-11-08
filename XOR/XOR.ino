@@ -723,7 +723,7 @@ void loop()
 
             */
 
-            get_dW2(hiddenLayer, core, double error);
+            get_dW2(hiddenLayer, core, error);
             // BP: output->hidden to get dH (=W2 x error)
 
             outputLayer._postNeuronValue[0] = 0;
@@ -737,7 +737,7 @@ void loop()
             printADCN5N6value(core);
             referencing_BP(outputLayer, core);
 
-            dZ1 = dH x input.postActiv x(1 - input.postActiv);
+            // dZ1 = dH x input.postActiv x(1 - input.postActiv);
             for (int i = 0; i < 5; i++)
             {
                 core._dZ[i] = core._dH[i] * inputLayer._postNeuronActivationValue[i] * (1 - inputLayer._postNeuronActivationValue[i]);
@@ -751,7 +751,7 @@ void loop()
             printdW2(core);
 
             // Get P[] Q[]
-            for (row_num = 0; row_num < 5; row_num++)
+            for (int row_num = 0; row_num < 5; row_num++)
             {
                 // P[i] = core._dW2[i] *
             }
