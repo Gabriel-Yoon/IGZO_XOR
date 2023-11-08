@@ -685,20 +685,23 @@ void loop()
             loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
             Serial.print("loss: ");
             Serial.println(loss);
+
             error = outputLayer._preNeuronValue[1] - solution_double;
+            Serial.print("error: ");
+            Serial.println(error);
 
             // Weight Update 1 : Output -> Hidden Layer ----------------------------
             /* Weight Update
 
                     Q2[0] --
 
-                    Q2[1] --             **(1,1)
+                    Q2[1] --           **(1,1)
 
                     Q2[2] --
 
-                    Q2[3] --             **(3,1)
+                    Q2[3] --           **(3,1)
 
-                    Q2[4] --             **(4,1)
+                    Q2[4] --           **(4,1)
 
                                 |      |       |       |       |
                                 P2[0]  P2[1]   P2[2]   P2[3]   P2[4]
@@ -736,15 +739,19 @@ void loop()
             Serial.println("Obtained ADC Value after output->hidden BP");
             printADCN5N6value(core);
             referencing_BP(outputLayer, core);
-            core.setdHfromADCvalue();
+            core.setdHfromADCvalue(); // only take 1 , 3 , 4
 
             // dZ1 = dH x input.postActiv x(1 - input.postActiv);
             for (int i = 0; i < 5; i++)
             {
                 core._dZ[i] = core._dH[i] * inputLayer._postNeuronActivationValue[i] * (1 - inputLayer._postNeuronActivationValue[i]);
+            }
+
+            for (int i = 0; i < 5; i++)
+            {
                 for (int j = 0; j < 5; j++)
                 {
-                    core._dW1[i][j] = inputLayer._preNeuronValue[i] * core._dZ[j];
+                    core._dW1[i][j] = inputLayer._preNeuronValue[i] * core._dZ[i];
                 }
             }
 
