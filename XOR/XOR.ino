@@ -595,7 +595,7 @@ void loop()
 
         // EPOCH ---------------------------------------------------------
 
-        epoch = 1;
+        epoch = 4;
         core.initialize();
         // core.setRange(100);
 
@@ -604,9 +604,33 @@ void loop()
             Serial.println("// ---------------------------------------------------------");
             Serial.print("epoch = ");
             Serial.println(i + 1);
-
             int X1 = rand() % 2;
             int X2 = rand() % 2;
+
+            // Temporary code for different X1, X2 values
+            switch (epoch)
+            {
+            case 0:
+                X1 = 0;
+                X2 = 0;
+                break;
+            case 1:
+                X1 = 0;
+                X2 = 1;
+                break;
+            case 2:
+                X1 = 1;
+                X2 = 0;
+                break;
+            case 3:
+                X1 = 1;
+                X2 = 1;
+                break;
+            default:
+                X1 = 0;
+                X2 = 0;
+                break;
+            }
 
             int solution = X1 ^ X2;
             double solution_double = (solution == 0) ? 0.0 : 1.0;
@@ -614,7 +638,7 @@ void loop()
             Serial.print(" XOR Problem of ");
             Serial.print(X1);
             Serial.print(" and ");
-            Serial.print(X2);
+            Serial.println(X2);
 
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
