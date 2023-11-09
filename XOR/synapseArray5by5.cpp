@@ -7,6 +7,7 @@ synapseArray5by5::synapseArray5by5()
     for (int i = 0; i < 5; i++)
     {
         this->_WL[i] = 0;
+        this->_ADCvalueTemp[i] = 0;
         this->_ADCvalueN5[i] = 0;
         this->_ADCvalueN6[i] = 0;
         this->_ADCvalueN5N6[i] = 0;
@@ -25,6 +26,7 @@ synapseArray5by5::synapseArray5by5()
             this->_noise[i][j] = 0;
 
             this->_weight[i][j] = 0;
+            this->_weightADC[i][j] = 0;
             this->_initialWeight[i][j] = 0;
             this->_targetWeight[i][j] = 0;
             this->_targetBias[i][j] = 0;
@@ -70,6 +72,7 @@ void synapseArray5by5::setADCvalueTemp(int ADC_0, int ADC_1, int ADC_2, int ADC_
     this->_ADCvalueTemp[3] = ADC_3;
     this->_ADCvalueTemp[4] = ADC_4;
 }
+//--------------------------------------------------------------
 void synapseArray5by5::setADCvalueN5()
 {
     this->_ADCvalueN5[0] = this->_ADCvalueTemp[0];

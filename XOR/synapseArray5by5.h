@@ -44,6 +44,7 @@ public:
 
     // weight matrix: w values in y = wx +b
     double _weight[5][5];
+    double _weightADC[5][5];
     double _initialWeight[5][5];
     double _targetWeight[5][5];
     double _targetBias[5][5];
@@ -84,6 +85,7 @@ public:
     void setADCgndValue(int rowNum);
     void setADCnoiseValue(int rowNum);
     void setADCrefValue();
+    void modifyADCrefValue();
 
     void setWeightToInitialWeight();
     void setInitialWeight();

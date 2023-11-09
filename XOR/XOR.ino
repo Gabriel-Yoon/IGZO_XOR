@@ -77,7 +77,7 @@ SAM3X-Arduino Pin Mapping
 #define MAX 120          // Read pulse set까지의 시간을 위하여
 #define Bit_length 300   // update할 때의 timing을 맞추기 위해서 따로 정의
 #define VAR_NUM 10       // 총 Input variable 수를 정의할 것
-#define learning_rate 50 // 1st layer의 learning rate 정의
+#define learning_rate 10 // 1st layer의 learning rate 정의
 #define amplification_factor 8
 #define DECISION_BOUNDARY 0
 #define PRINTER(name) printer(#name, (name))
@@ -495,6 +495,10 @@ void loop()
         {
             Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
             core.setADCmidValue(rowNum);
+            for (int colNum = 0; colNum < 5; colNum++)
+            {
+                core._weightADC[rowNum][colNum] = core._ADCvalueN5N6[colNum];
+            }
         }
 
         delay(50);
@@ -640,6 +644,18 @@ void loop()
             // Serial.print(X1);
             // Serial.print(" and ");
             // Serial.println(X2);
+
+            // ADC -> digital weight modifying
+            for (int rowNum = 0; rowNum < 5; rowNum++)
+            {
+                Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                for (int colNum = 0; colNum < 5; colNum++)
+                {
+                    core._weight[rowNum][colNum] += (core._ADCvalueN5N6[colNum] - core._weightADC[rowNum][colNum]) / core._range;
+                    core._weightADC[rowNum][colNum] = core._ADCvalueN5N6[colNum];
+                }
+            }
+            core.setADCrefValue();
 
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
