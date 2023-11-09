@@ -737,7 +737,7 @@ void loop()
             error = outputLayer._preNeuronValue[1] - solution_double;
             Serial.print(" error: ");
             Serial.println(error);
-            ErrorEpochRecorder[i] = error;
+            ErrorEpochRecorder.push_back(error);
 
             get_dW2(hiddenLayer, core, error);
             // BP: output->hidden to get dH (=W2 x error)
