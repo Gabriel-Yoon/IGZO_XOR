@@ -789,10 +789,10 @@ void loop()
             */
             // dW2
             Q2[0] = 0;
-            Q2[1] = abs(core._dW2[1][1]);
+            Q2[1] = abs(core._dW2[1][1]) / learning_rate;
             Q2[2] = 0;
-            Q2[3] = abs(core._dW2[3][1]);
-            Q2[4] = abs(core._dW2[4][1]);
+            Q2[3] = abs(core._dW2[3][1]) / learning_rate;
+            Q2[4] = abs(core._dW2[4][1]) / learning_rate;
 
             P2[0] = 0;
             P2[1] = error;
@@ -850,7 +850,7 @@ void loop()
                         break;
                     }
 
-                    P1[col_num] = abs(core._dW1[row_num][col_num]);
+                    P1[col_num] = abs(core._dW1[row_num][col_num]) / learning_rate;
 
                     if (core._dW1[row_num][col_num] > 0)
                     {
