@@ -106,7 +106,7 @@ double error, loss;
 double learning_rate_partial;
 
 // Export
-double ErrorEpochRecorder[1000];
+std::vector<double> ErrorEpochRecorder;
 
 // FORWARD DECLARATION ************************************
 
@@ -599,8 +599,6 @@ void loop()
         */
 
         // EPOCH ---------------------------------------------------------
-
-        epoch = 4;
         core.initialize();
         // core.setRange(100);
 
