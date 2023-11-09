@@ -855,18 +855,15 @@ void loop()
 
             Serial.println("************************************************ XOR PROBLEM SOLVING END");
             // ************************************************ XOR PROBLEM SOLVING END
-        }
-    }
-
-    // error print
-    for (int i = 0; i < epoch; i++)
-    {
-        Serial.print("Error print: ");
-        Serial.print(ErrorEpochRecorder[i]);
-        Serial.print(" ");
-        if (i % 10 == 0)
-        {
-            Serial.println(" ");
+            if (i == epoch - 1)
+            {
+                // error print
+                Serial.println("Error print ");
+                for (int i = 0; i < epoch; i++)
+                {
+                    Serial.println(ErrorEpochRecorder[i] * 100);
+                }
+            }
         }
     }
 }
