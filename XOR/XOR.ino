@@ -184,6 +184,7 @@ void loop()
             N5[i][Bit_length] = 0;
         }
     }
+    int epoch;
 
     if (Serial.available() > 0)
     {
@@ -215,7 +216,7 @@ void loop()
         // 100, 1, 1, 1, 10, 100, 1, 1, 2, 1, 1000
 
         // 1
-        int epoch = epoch_string.toInt();
+        epoch = epoch_string.toInt();
         // 2, 3, 4
         int pulseWidth = pulse_width_string.toInt();     // [micro s]
         int preEnableTime = pre_enable_string.toInt();   // [micro s]
@@ -595,7 +596,7 @@ void loop()
 
         // EPOCH ---------------------------------------------------------
 
-        epoch = 4;
+        epoch = 100;
         core.initialize();
         // core.setRange(100);
 
@@ -650,16 +651,16 @@ void loop()
 
             // FF: input->hidden
             FeedForward(readTime, readSetTime, readDelay, inputLayer, core);
-            Serial.println("Obtained ADC Value after input->hidden FF");
-            printADCN5N6value(core);
+            // Serial.println("Obtained ADC Value after input->hidden FF");
+            // printADCN5N6value(core);
 
             referencing_FF(inputLayer, core);
-            Serial.println("Referenced Value after input->hidden FF");
-            printLayerPostNeuronValue(inputLayer);
+            // Serial.println("Referenced Value after input->hidden FF");
+            // printLayerPostNeuronValue(inputLayer);
 
             inputLayer.sigmoidActivation();
-            Serial.println("Activation Value after input->hidden FF");
-            printLayerPostNeuronActivationValue(inputLayer);
+            // Serial.println("Activation Value after input->hidden FF");
+            // printLayerPostNeuronActivationValue(inputLayer);
 
             // FF: hidden->output
             // There is a hidden error here. the values that should be zero could have a possibility of not having 0
@@ -669,20 +670,20 @@ void loop()
             hiddenLayer._preNeuronValue[3] = inputLayer._postNeuronActivationValue[2];
             hiddenLayer._preNeuronValue[4] = inputLayer._postNeuronActivationValue[4];
 
-            Serial.println("PreNeuron Value of hidden layer");
-            printLayerPreNeuronValue(hiddenLayer);
+            // Serial.println("PreNeuron Value of hidden layer");
+            // printLayerPreNeuronValue(hiddenLayer);
 
             FeedForward(readTime, readSetTime, readDelay, hiddenLayer, core);
-            Serial.println("Obtained ADC Value after hidden->output FF");
-            printADCN5N6value(core);
+            // Serial.println("Obtained ADC Value after hidden->output FF");
+            // printADCN5N6value(core);
 
             referencing_FF(hiddenLayer, core);
-            Serial.println("Referenced Value after hidden->output FF");
-            printLayerPostNeuronValue(hiddenLayer);
+            // Serial.println("Referenced Value after hidden->output FF");
+            // printLayerPostNeuronValue(hiddenLayer);
 
             hiddenLayer.sigmoidActivation();
-            Serial.println("Activation Value after hidden->output FF");
-            printLayerPostNeuronActivationValue(hiddenLayer);
+            // Serial.println("Activation Value after hidden->output FF");
+            // printLayerPostNeuronActivationValue(hiddenLayer);
 
             outputLayer._preNeuronValue[0] = 0;
             outputLayer._preNeuronValue[1] = hiddenLayer._postNeuronActivationValue[1];
@@ -690,9 +691,9 @@ void loop()
             outputLayer._preNeuronValue[3] = 0;
             outputLayer._preNeuronValue[4] = 0;
 
-            Serial.println("XOR Problem Solving FF Result");
-            Serial.print("output value : ");
-            Serial.println(outputLayer._preNeuronValue[1]);
+            // Serial.println("XOR Problem Solving FF Result");
+            // Serial.print("output value : ");
+            // Serial.println(outputLayer._preNeuronValue[1]);
             outputLayer.copyPreToPostNeuronValues();
 
             answer = (outputLayer._preNeuronValue[1] > 0.5) ? 1 : 0;
@@ -709,12 +710,13 @@ void loop()
 
             // loss, error, accuracy calculation
             loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
-            Serial.print("loss: ");
-            Serial.println(loss);
+            // Serial.print("loss: ");
+            // Serial.println(loss);
 
             error = outputLayer._preNeuronValue[1] - solution_double;
-            Serial.print("error: ");
-            Serial.println(error);
+            // Serial.print("error: ");
+            // Serial.println(error);
+            ErrorEpochRecorder[i] = error;
 
             get_dW2(hiddenLayer, core, error);
             // BP: output->hidden to get dH (=W2 x error)
@@ -726,8 +728,8 @@ void loop()
             outputLayer._postNeuronValue[4] = 0;
 
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
-            Serial.println("Obtained ADC Value after output->hidden BP");
-            printADCN5N6value(core);
+            // Serial.println("Obtained ADC Value after output->hidden BP");
+            // printADCN5N6value(core);
             referencing_BP(outputLayer, core);
             core.setdHfromADCvalue(); // only take 1 , 3 , 4
 
@@ -745,8 +747,8 @@ void loop()
                 }
             }
 
-            printdW1(core);
-            printdW2(core);
+            // printdW1(core);
+            // printdW2(core);
 
             // Get P[] Q[]
             for (int row_num = 0; row_num < 5; row_num++)
@@ -853,8 +855,18 @@ void loop()
 
             Serial.println("************************************************ XOR PROBLEM SOLVING END");
             // ************************************************ XOR PROBLEM SOLVING END
+        }
+    }
 
-            // 3. GROUNDING TEST ------------------------------------------------------
+    // error print
+    for (int i = 0; i < epoch; i++)
+    {
+        Serial.print("Error print: ");
+        Serial.print(ErrorEpochRecorder[i]);
+        Serial.print(" ");
+        if (i % 10 == 0)
+        {
+            Serial.println(" ");
         }
     }
 }
