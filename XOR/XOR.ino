@@ -74,10 +74,10 @@ SAM3X-Arduino Pin Mapping
 
 // FIELDS *********************************************
 
-#define MAX 120           // Read pulse set까지의 시간을 위하여
-#define Bit_length 300    // update할 때의 timing을 맞추기 위해서 따로 정의
-#define VAR_NUM 10        // 총 Input variable 수를 정의할 것
-#define learning_rate 300 // 1st layer의 learning rate 정의
+#define MAX 120          // Read pulse set까지의 시간을 위하여
+#define Bit_length 300   // update할 때의 timing을 맞추기 위해서 따로 정의
+#define VAR_NUM 10       // 총 Input variable 수를 정의할 것
+#define learning_rate 30 // 1st layer의 learning rate 정의
 #define amplification_factor 8
 #define DECISION_BOUNDARY 0
 #define PRINTER(name) printer(#name, (name))
@@ -604,7 +604,7 @@ void loop()
         {
             // Serial.println("// ---------------------------------------------------------");
             Serial.print("epoch = ");
-            Serial.println(i + 1);
+            Serial.print(i + 1);
             int X1 = rand() % 2;
             int X2 = rand() % 2;
 
@@ -636,10 +636,10 @@ void loop()
             int solution = X1 ^ X2;
             double solution_double = (solution == 0) ? 0.0 : 1.0;
             int answer;
-            Serial.print(" XOR Problem of ");
-            Serial.print(X1);
-            Serial.print(" and ");
-            Serial.println(X2);
+            // Serial.print(" XOR Problem of ");
+            // Serial.print(X1);
+            // Serial.print(" and ");
+            // Serial.println(X2);
 
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
@@ -697,14 +697,14 @@ void loop()
             outputLayer.copyPreToPostNeuronValues();
 
             answer = (outputLayer._preNeuronValue[1] > 0.5) ? 1 : 0;
-            if (answer == solution)
-            {
-                Serial.print(" Correct ");
-            }
-            else
-            {
-                Serial.print(" Wrong ");
-            }
+            // if (answer == solution)
+            // {
+            //     Serial.print(" Correct ");
+            // }
+            // else
+            // {
+            //     Serial.print(" Wrong ");
+            // }
 
             // Backpropagation -----------------------------------------------------
 
@@ -714,7 +714,7 @@ void loop()
             // Serial.println(loss);
 
             error = outputLayer._preNeuronValue[1] - solution_double;
-            Serial.print("error: ");
+            Serial.print(" error: ");
             Serial.println(error);
             ErrorEpochRecorder[i] = error;
 
@@ -795,7 +795,7 @@ void loop()
             Q2[4] = abs(core._dW2[4][1]) / learning_rate;
 
             P2[0] = 0;
-            P2[1] = error;
+            P2[1] = 1;
             P2[2] = 0;
             P2[3] = 0;
             P2[4] = 0;
@@ -840,7 +840,8 @@ void loop()
             */
             for (int row_num = 0; row_num < 5; row_num++)
             {
-                Q1[row_num] = inputLayer._preNeuronValue[row_num];
+                Q1[row_num] = 1;
+                // inputLayer._preNeuronValue[row_num];
             }
 
             for (int row_num = 0; row_num < 5; row_num++)
