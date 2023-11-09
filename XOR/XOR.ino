@@ -608,7 +608,7 @@ void loop()
             int X2 = rand() % 2;
 
             // Temporary code for different X1, X2 values
-            switch (i)
+            switch (i % 4)
             {
             case 0:
                 X1 = 0;
@@ -705,6 +705,8 @@ void loop()
                 Serial.println("Wrong");
             }
 
+            // Backpropagation -----------------------------------------------------
+
             // loss, error, accuracy calculation
             loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
             Serial.print("loss: ");
@@ -713,42 +715,6 @@ void loop()
             error = outputLayer._preNeuronValue[1] - solution_double;
             Serial.print("error: ");
             Serial.println(error);
-
-            // Weight Update 1 : Output -> Hidden Layer ----------------------------
-            /* Weight Update
-
-                    Q2[0] --
-
-                    Q2[1] --           **(1,1)
-
-                    Q2[2] --
-
-                    Q2[3] --           **(3,1)
-
-                    Q2[4] --           **(4,1)
-
-                                |      |       |       |       |
-                                P2[0]  P2[1]   P2[2]   P2[3]   P2[4]
-
-            */
-
-            // Weight Update 2 : Hidden -> Visible Layer -----------------------------
-            /*
-
-                        Q1[0] --     **              **              **
-
-                        Q1[1] --
-
-                        Q1[2] --     **              **              **
-
-                        Q1[3] --
-
-                        Q1[4] --
-
-                                    |      |       |       |       |
-                                    P1[0]  P1[1]   P1[2]   P1[3]   P1[4]
-
-            */
 
             get_dW2(hiddenLayer, core, error);
             // BP: output->hidden to get dH (=W2 x error)
@@ -801,12 +767,95 @@ void loop()
             readTime = 2000;
             readSetTime = 1;
             updateNum = 1000;
+
+            // Weight Update 1 : Output -> Hidden Layer ----------------------------
+            /* Weight Update
+
+                    Q2[0] --
+
+                    Q2[1] --           **(1,1)
+
+                    Q2[2] --
+
+                    Q2[3] --           **(3,1)
+
+                    Q2[4] --           **(4,1)
+
+                                |      |       |       |       |
+                                P2[0]  P2[1]   P2[2]   P2[3]   P2[4]
+
+            */
+            // dW2
+            Q2[0] = 0;
+            Q2[1] = abs(core._dW2[1][1]);
+            Q2[2] = 0;
+            Q2[3] = abs(core._dW2[3][1]);
+            Q2[4] = abs(core._dW2[4][1]);
+
+            P2[0] = 0;
+            P2[1] = error;
+            P2[2] = 0;
+            P2[3] = 0;
+            P2[4] = 0;
+
+            if (error > 0)
+            {
+                SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+            }
+            else
+            {
+                SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+            }
+
+            // Weight Update 2 : Hidden -> Visible Layer -----------------------------
+            /*
+
+                        Q1[0] --     **              **              **
+
+                        Q1[1] --
+
+                        Q1[2] --     **              **              **
+
+                        Q1[3] --
+
+                        Q1[4] --
+
+                                    |      |       |       |       |
+                                    P1[0]  P1[1]   P1[2]   P1[3]   P1[4]
+
+            */
+            for (int row_num = 0; row_num < 5; row_num++)
+            {
+                Q1[row_num] = inputLayer._preNeuronValue[row_num];
+            }
+
+            for (int row_num = 0; row_num < 5; row_num++)
+            {
+                for (int col_num = 0; col_num < 5; col_num++)
+                {
+                    if (core._dW1[row_num][col_num] == 0)
+                    {
+                        break;
+                    }
+
+                    P1[col_num] = abs(core._dW1[row_num][col_num]);
+
+                    if (core._dW1[row_num][col_num] > 0)
+                    {
+                        SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                    }
+                    else
+                    {
+                        SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                    }
+                }
+            }
+
+            Serial.println("************************************************ XOR PROBLEM SOLVING END");
+            // ************************************************ XOR PROBLEM SOLVING END
+
+            // 3. GROUNDING TEST ------------------------------------------------------
         }
-
-        Serial.println("************************************************ XOR PROBLEM SOLVING END");
-        // ************************************************ XOR PROBLEM SOLVING END
-
-        // 3. GROUNDING TEST ------------------------------------------------------
     }
 }
 //**************************************************************************************************************//
@@ -1649,6 +1698,62 @@ void Depression(int *N3_0, int *N3_1, int *N3_2, int *N3_3, int *N3_4, int *N4_0
         PIOC->PIO_CODR = n3_clear;           // N3 clear
         delayMicroseconds(zero_time);
     }
+}
+
+void SGDsetRegisterPotentiation(int *P, int *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
+{
+    for (int i = 0; i < Bit_length; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            if (abs(Q[j]) == 0)
+            {
+                N1[j][i] = 0;
+            }
+            else
+            {
+                N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0; // j = 2, 3, 4 only
+            }
+
+            if (abs(P[j]) == 0)
+            {
+                N2[j][i] = 0;
+            }
+            else
+            {
+                N2[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0; // j = 2 only
+            }
+        }
+    }
+    Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
+}
+
+void SGDsetRegisterDepression(int *P, int *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
+{
+    for (int i = 0; i < Bit_length; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            if (abs(Q[j]) == 0)
+            {
+                N3[j][i] = 0;
+            }
+            else
+            {
+                N3[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0; // j = 2, 3, 4 only
+            }
+
+            if (abs(P[j]) == 0)
+            {
+                N4[j][i] = 0;
+            }
+            else
+            {
+                N4[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0; // j = 2 only
+            }
+        }
+    }
+    Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 }
 
 double BinaryCrossentropy(double &y_hat, double &y)
