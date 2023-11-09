@@ -831,13 +831,13 @@ void loop()
                     }
                     if (core._dW2[row_num][col_num] > 0)
                     {
-                        // SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                     else
                     {
-                        SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        // SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                 }
             }
@@ -881,13 +881,13 @@ void loop()
 
                     if (core._dW1[row_num][col_num] > 0)
                     {
-                        // SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                     else
                     {
-                        SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        // SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                 }
             }
