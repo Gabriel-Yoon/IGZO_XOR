@@ -602,7 +602,7 @@ void loop()
 
         for (int i = 0; i < epoch; i++)
         {
-            Serial.println("// ---------------------------------------------------------");
+            // Serial.println("// ---------------------------------------------------------");
             Serial.print("epoch = ");
             Serial.println(i + 1);
             int X1 = rand() % 2;
@@ -699,11 +699,11 @@ void loop()
             answer = (outputLayer._preNeuronValue[1] > 0.5) ? 1 : 0;
             if (answer == solution)
             {
-                Serial.println("Correct");
+                Serial.print(" Correct ");
             }
             else
             {
-                Serial.println("Wrong");
+                Serial.print(" Wrong ");
             }
 
             // Backpropagation -----------------------------------------------------
@@ -714,8 +714,8 @@ void loop()
             // Serial.println(loss);
 
             error = outputLayer._preNeuronValue[1] - solution_double;
-            // Serial.print("error: ");
-            // Serial.println(error);
+            Serial.print("error: ");
+            Serial.println(error);
             ErrorEpochRecorder[i] = error;
 
             get_dW2(hiddenLayer, core, error);
@@ -800,13 +800,23 @@ void loop()
             P2[3] = 0;
             P2[4] = 0;
 
-            if (error > 0)
+            for (int row_num = 0; row_num < 5; row_num++)
             {
-                SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-            }
-            else
-            {
-                SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                for (int col_num = 0; col_num < 5; col_num++)
+                {
+                    if (core._dW2[row_num][col_num] == 0)
+                    {
+                        break;
+                    }
+                    if (core._dW2[row_num][col_num] > 0)
+                    {
+                        SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                    }
+                    else
+                    {
+                        SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                    }
+                }
             }
 
             // Weight Update 2 : Hidden -> Visible Layer -----------------------------
@@ -853,7 +863,7 @@ void loop()
                 }
             }
 
-            Serial.println("************************************************ XOR PROBLEM SOLVING END");
+            // Serial.println("************************************************ XOR PROBLEM SOLVING END");
             // ************************************************ XOR PROBLEM SOLVING END
             if (i == epoch - 1)
             {
