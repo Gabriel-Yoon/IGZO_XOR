@@ -660,8 +660,6 @@ void loop()
             }
             core.setADCrefValue();
 
-            printDigitalWeight(core);
-
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
             inputLayer._preNeuronValue[0] = X1;
@@ -757,7 +755,7 @@ void loop()
             // dZ1 = dH x input.postActiv x(1 - input.postActiv);
             for (int i = 0; i < 5; i++)
             {
-                core._dZ[i] = core._dH[i] * inputLayer._postNeuronActivationValue[i] * (1 - inputLayer._postNeuronActivationValue[i]);
+                core._dZ[i] = core._dH[i] * hiddenLayer._preNeuronValue[i] * (1 - hiddenLayer._preNeuronValue[i]);
             }
 
             for (int i = 0; i < 5; i++)
@@ -859,15 +857,7 @@ void loop()
                                     P1[0]  P1[1]   P1[2]   P1[3]   P1[4]
 
             */
-            for (int row_num = 0; row_num < 5; row_num++)
-            {
-                for (int col_num = 0; col_num < 5; col_num++)
-                {
-                    Q1[row_num] = abs(core._dW1[row_num][col_num]) / learning_rate;
-                }
-
-                // inputLayer._preNeuronValue[row_num];
-            }
+            // inputLayer._preNeuronValue[row_num];
 
             for (int row_num = 0; row_num < 5; row_num++)
             {
@@ -878,6 +868,7 @@ void loop()
                     {
                         break;
                     }
+                    Q1[row_num] = abs(core._dW1[row_num][col_num]) / learning_rate;
 
                     if (core._dW1[row_num][col_num] > 0)
                     {
@@ -905,6 +896,7 @@ void loop()
                 }
             }
         }
+        printDigitalWeight(core);
     }
 }
 //**************************************************************************************************************//
