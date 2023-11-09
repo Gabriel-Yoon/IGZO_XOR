@@ -600,7 +600,7 @@ void loop()
 
         // EPOCH ---------------------------------------------------------
 
-        epoch = 1000;
+        epoch = 4;
         core.initialize();
         // core.setRange(100);
 
@@ -645,7 +645,7 @@ void loop()
             // Serial.print(" and ");
             // Serial.println(X2);
 
-            // ADC -> digital weight modifying
+            // ADC -> digital weight modifying/dereferencing
             zeroTime = 1;
             readDelay = 1;
             readTime = 2000;
@@ -661,6 +661,8 @@ void loop()
                 }
             }
             core.setADCrefValue();
+
+            printDigitalWeight(core);
 
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
@@ -1990,6 +1992,20 @@ void printADCrefValue(synapseArray5by5 &arg_core)
         Serial.println(" ");
     }
     Serial.println("-------------------");
+}
+
+void printDigitalWeight(synapseArray5by5 &arg_core)
+{
+    Serial.println("Digital Weight Print");
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            Serial.print(arg_core._weight[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
 }
 
 void printLayerPreNeuronValue(neuronLayer &arg_neurons)
