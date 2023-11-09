@@ -74,10 +74,10 @@ SAM3X-Arduino Pin Mapping
 
 // FIELDS *********************************************
 
-#define MAX 120         // Read pulse set까지의 시간을 위하여
-#define Bit_length 300  // update할 때의 timing을 맞추기 위해서 따로 정의
-#define VAR_NUM 10      // 총 Input variable 수를 정의할 것
-#define learning_rate 1 // 1st layer의 learning rate 정의
+#define MAX 120          // Read pulse set까지의 시간을 위하여
+#define Bit_length 300   // update할 때의 timing을 맞추기 위해서 따로 정의
+#define VAR_NUM 10       // 총 Input variable 수를 정의할 것
+#define learning_rate 30 // 1st layer의 learning rate 정의
 #define amplification_factor 8
 #define DECISION_BOUNDARY 0
 #define PRINTER(name) printer(#name, (name))
@@ -831,13 +831,13 @@ void loop()
                     }
                     if (core._dW2[row_num][col_num] > 0)
                     {
-                        SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        // SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                     else
                     {
-                        // SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        SGDsetRegisterPotentiation(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // SGDsetRegisterDepression(P2, Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                 }
             }
@@ -881,13 +881,13 @@ void loop()
 
                     if (core._dW1[row_num][col_num] > 0)
                     {
-                        SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        // SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                     else
                     {
-                        // SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        SGDsetRegisterPotentiation(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // SGDsetRegisterDepression(P1, Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                 }
             }
