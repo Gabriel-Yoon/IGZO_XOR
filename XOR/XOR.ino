@@ -608,7 +608,7 @@ void loop()
             int X2 = rand() % 2;
 
             // Temporary code for different X1, X2 values
-            switch (epoch)
+            switch (i)
             {
             case 0:
                 X1 = 0;
