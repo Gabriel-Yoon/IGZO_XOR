@@ -646,6 +646,11 @@ void loop()
             // Serial.println(X2);
 
             // ADC -> digital weight modifying
+            zeroTime = 1;
+            readDelay = 1;
+            readTime = 2000;
+            readSetTime = 1;
+
             for (int rowNum = 0; rowNum < 5; rowNum++)
             {
                 Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
