@@ -61,8 +61,10 @@ public:
     // (SGD) Stochastic Gradient Descent
     int p[5];
     int q[5];
-    int P[5];
-    int Q[5];
+    int P1[5];
+    int Q1[5];
+    int P2[5];
+    int Q2[5];
     /*---------------------methods----------------*/
 
 public:
@@ -93,6 +95,11 @@ public:
     void setTargetBias();
 
     void setdHfromADCvalue();
+
+    void clearQ1();
+    void clearP1();
+    void clearQ2();
+    void clearP2();
 };
 //**************************************************************************************************************//
 #endif

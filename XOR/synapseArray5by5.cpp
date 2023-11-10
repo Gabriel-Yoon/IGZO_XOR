@@ -290,3 +290,35 @@ void synapseArray5by5::setdHfromADCvalue()
         this->_dH[i] = this->_ADCvalueN5N6[i];
     }
 }
+//--------------------------------------------------------------
+void synapseArray5by5::clearP1()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->P1[i] = 0;
+    }
+}
+//--------------------------------------------------------------
+void synapseArray5by5::clearQ1()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->Q1[i] = 0;
+    }
+}
+//--------------------------------------------------------------
+void synapseArray5by5::clearP2()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->P2[i] = 0;
+    }
+}
+//--------------------------------------------------------------
+void synapseArray5by5::clearQ2()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->Q2[i] = 0;
+    }
+}
