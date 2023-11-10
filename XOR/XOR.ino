@@ -77,7 +77,7 @@ SAM3X-Arduino Pin Mapping
 #define MAX 120          // Read pulse set까지의 시간을 위하여
 #define Bit_length 300   // update할 때의 timing을 맞추기 위해서 따로 정의
 #define VAR_NUM 10       // 총 Input variable 수를 정의할 것
-#define learning_rate 30 // 1st layer의 learning rate 정의
+#define learning_rate 10 // 1st layer의 learning rate 정의
 #define amplification_factor 8
 #define DECISION_BOUNDARY 0
 #define PRINTER(name) printer(#name, (name))
@@ -192,12 +192,12 @@ void loop()
         bool enable_GNDTEST = false;
         bool enable_noise = false;
 
-        bool inputX1X2FourTypes = false;
+        bool inputX1X2FourTypes = true;
         bool inputX1X2Random = false;
         bool inputX1X200 = false;
         bool inputX1X201 = false;
         bool inputX1X210 = false;
-        bool inputX1X211 = true;
+        bool inputX1X211 = false;
 
         // SERIAL INPUT ******************************************************
         Input_string = Serial.readString();
