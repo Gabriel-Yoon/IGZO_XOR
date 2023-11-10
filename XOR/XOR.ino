@@ -802,6 +802,9 @@ void loop()
                 // P[i] = core._dW2[i] *
             }
 
+            printdW1(core);
+            printdW2(core);
+
             // Weight Update
             // 1. Potentiation and Depression
             // Condition Setup
@@ -1778,7 +1781,7 @@ void Depression(int *N3_0, int *N3_1, int *N3_2, int *N3_3, int *N3_4, int *N4_0
     }
 }
 
-void SGDsetRegisterPotentiation(int *P, int *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
+void SGDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
 {
     for (int i = 0; i < Bit_length; i++)
     {
@@ -1842,7 +1845,7 @@ void SGDsetRegisterPotentiation(int *P, int *Q, int pulseWidth, int preEnableTim
     Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 }
 
-void SGDsetRegisterDepression(int *P, int *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
+void SGDsetRegisterDepression(double *P, double *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
 {
     for (int i = 0; i < Bit_length; i++)
     {
