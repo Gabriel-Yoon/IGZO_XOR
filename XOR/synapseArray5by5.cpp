@@ -12,6 +12,8 @@ synapseArray5by5::synapseArray5by5()
         this->_ADCvalueN6[i] = 0;
         this->_ADCvalueN5N6[i] = 0;
         this->_ADCbias[i] = 0;
+        this->_ADCvalueBPTemp[i] = 0;
+        this->_ADCvalueBPZero[i] = 0;
 
         this->_dH[i] = 0;
         this->_dZ[i] = 0;
@@ -87,22 +89,36 @@ void synapseArray5by5::setADCvalueTemp(int ADC_0, int ADC_1, int ADC_2, int ADC_
     this->_ADCvalueTemp[4] = ADC_4;
 }
 //--------------------------------------------------------------
+void synapseArray5by5::setADCvalueBPTemp()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->_ADCvalueBPTemp[i] = this->_ADCvalueN5N6[i];
+    }
+}
+//--------------------------------------------------------------
+void synapseArray5by5::setADCvalueBPZero()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->_ADCvalueBPZero[i] = this->_ADCvalueTemp[i];
+    }
+}
+//--------------------------------------------------------------
 void synapseArray5by5::setADCvalueN5()
 {
-    this->_ADCvalueN5[0] = this->_ADCvalueTemp[0];
-    this->_ADCvalueN5[1] = this->_ADCvalueTemp[1];
-    this->_ADCvalueN5[2] = this->_ADCvalueTemp[2];
-    this->_ADCvalueN5[3] = this->_ADCvalueTemp[3];
-    this->_ADCvalueN5[4] = this->_ADCvalueTemp[4];
+    for (int i = 0; i < 5; i++)
+    {
+        this->_ADCvalueN5[i] = this->_ADCvalueTemp[i];
+    }
 }
 //--------------------------------------------------------------
 void synapseArray5by5::setADCvalueN6()
 {
-    this->_ADCvalueN6[0] = this->_ADCvalueTemp[0];
-    this->_ADCvalueN6[1] = this->_ADCvalueTemp[1];
-    this->_ADCvalueN6[2] = this->_ADCvalueTemp[2];
-    this->_ADCvalueN6[3] = this->_ADCvalueTemp[3];
-    this->_ADCvalueN6[4] = this->_ADCvalueTemp[4];
+    for (int i = 0; i < 5; i++)
+    {
+        this->_ADCvalueN6[i] = this->_ADCvalueTemp[i];
+    }
 }
 //--------------------------------------------------------------
 void synapseArray5by5::setADCvalueN5N6()
@@ -294,14 +310,6 @@ void synapseArray5by5::setTargetBias()
         {
             this->_targetBias[i][j] = arr[i][j];
         }
-    }
-}
-//--------------------------------------------------------------
-void synapseArray5by5::setdHfromADCvalue()
-{
-    for (int i = 0; i < 5; i++)
-    {
-        this->_dH[i] = this->_ADCvalueN5N6[i];
     }
 }
 //--------------------------------------------------------------

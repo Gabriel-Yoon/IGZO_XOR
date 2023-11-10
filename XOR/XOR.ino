@@ -767,18 +767,27 @@ void loop()
             get_dW2(hiddenLayer, core, error);
             // BP: output->hidden to get dH (=W2 x error)
 
+            // BackPropagation setup
+
             outputLayer._postNeuronValue[0] = 0;
-            outputLayer._postNeuronValue[1] = 1; // this should be changed to 'error'
+            outputLayer._postNeuronValue[1] = 0; // this should be changed to 'error'
             outputLayer._postNeuronValue[2] = 0;
             outputLayer._postNeuronValue[3] = 0;
             outputLayer._postNeuronValue[4] = 0;
-
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
-            Serial.println("Obtained ADC Value after output->hidden BP");
-            printADCN5N6value(core);
+            core.setADCvalueBPZero();
+
+            outputLayer._postNeuronValue[0] = 0;
+            outputLayer._postNeuronValue[1] = error;
+            outputLayer._postNeuronValue[2] = 0;
+            outputLayer._postNeuronValue[3] = 0;
+            outputLayer._postNeuronValue[4] = 0;
+            BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
+            core.setADCvalueBPTemp();
 
             referencing_BP(outputLayer, core);
-            core.setdHfromADCvalue(); // only take 1 , 3 , 4
+            set_dH(outputLayer, core); // only take 1 , 3 , 4
+            printdH(core);
 
             // dZ1 = dH x input.postActiv x(1 - input.postActiv);
             for (int i = 0; i < 5; i++)
@@ -1949,23 +1958,15 @@ void referencing_BP(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
     // would become wx+b value
 
     double tempArr[5] = {0};
-
     for (int row_num = 0; row_num < 5; row_num++)
     {
-        tempArr[row_num] += arg_core._ADCvalueN5N6[row_num];
         for (int col_num = 0; col_num < 5; col_num++)
         {
-            tempArr[row_num] += (-1) * arg_neurons._postNeuronValue[col_num] * arg_core._ref[row_num][col_num];
-            // tempArr[col_num] += (-1) * arg_core._noise[row_num][col_num];
-
-            // Add bias
-            if (arg_core._targetBias[row_num][col_num] != 0)
+            if (arg_neurons._postNeuronValue[col_num] != 0 && arg_core._weight[row_num][col_num] != 0)
             {
-                tempArr[row_num] += arg_core._range * arg_core._targetBias[row_num][col_num];
+                arg_neurons._preNeuronValue[row_num] = (arg_core._ADCvalueBPTemp[row_num] - arg_core._ADCvalueBPZero[row_num]) / arg_core._weight[row_num][col_num];
             }
         }
-
-        arg_neurons._preNeuronValue[row_num] = tempArr[row_num] / arg_core._range;
     }
 }
 
@@ -1974,6 +1975,13 @@ void get_dW2(neuronLayer &arg_neurons, synapseArray5by5 &arg_core, double error)
     arg_core._dW2[1][1] = arg_neurons._preNeuronValue[1] * error;
     arg_core._dW2[3][1] = arg_neurons._preNeuronValue[3] * error;
     arg_core._dW2[4][1] = arg_neurons._preNeuronValue[4] * error;
+}
+void set_dH(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
+{
+    for (int row_num = 0; row_num < 5; row_num++)
+    {
+        arg_core._dH[row_num] = arg_neurons._preNeuronValue[row_num];
+    }
 }
 
 void printer(char *name, double value)
@@ -2171,6 +2179,17 @@ void printdW1(synapseArray5by5 &arg_core)
             Serial.print(" ");
         }
         Serial.println(" ");
+    }
+    Serial.println(" ");
+}
+
+void printdH(synapseArray5by5 &arg_core)
+{
+    Serial.println("dH values print: ");
+    for (int i = 0; i < 5; i++)
+    {
+        Serial.print(arg_core._dH[i]);
+        Serial.print(" ");
     }
     Serial.println(" ");
 }

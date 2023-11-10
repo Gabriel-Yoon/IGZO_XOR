@@ -41,6 +41,8 @@ public:
     int _ADCvalueN6[5];
     int _ADCvalueN5N6[5];
     int _ADCbias[5];
+    int _ADCvalueBPTemp[5];
+    int _ADCvalueBPZero[5];
 
     // weight matrix: w values in y = wx +b
     double _weight[5][5];
@@ -81,6 +83,8 @@ public:
     void setADCvalueN5();
     void setADCvalueN6();
     void setADCvalueN5N6();
+    void setADCvalueBPTemp();
+    void setADCvalueBPZero();
 
     void setADCminValue(int rowNum);
     void setADCmidValue(int rowNum);
@@ -94,8 +98,6 @@ public:
     void setInitialWeight();
     void setTargetWeight();
     void setTargetBias();
-
-    void setdHfromADCvalue();
 
     void clearQ1();
     void clearP1();
