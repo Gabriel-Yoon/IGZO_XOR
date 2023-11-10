@@ -297,12 +297,17 @@ void synapseArray5by5::setTargetBias()
     }
 }
 //--------------------------------------------------------------
-void synapseArray5by5::setdHfromADCvalue()
+void synapseArray5by5::setdHfromADCvalue(double error)
 {
     for (int i = 0; i < 5; i++)
     {
         this->_dH[i] = this->_ADCvalueN5N6[i];
+        if (error < 0)
+        {
+            this->_dH[i] = -this->_dH[i];
+        }
     }
+    // error = 0 case not accomodated
 }
 //--------------------------------------------------------------
 void synapseArray5by5::clearP1()

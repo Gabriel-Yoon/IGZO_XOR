@@ -767,17 +767,17 @@ void loop()
             get_dW2(hiddenLayer, core, error);
             // BP: output->hidden to get dH (=W2 x error)
 
-            outputLayer._postNeuronValue[0] = 0;
-            outputLayer._postNeuronValue[1] = error;
-            outputLayer._postNeuronValue[2] = 0;
-            outputLayer._postNeuronValue[3] = 0;
-            outputLayer._postNeuronValue[4] = 0;
+            outputLayer._preNeuronValue[0] = 0;
+            outputLayer._preNeuronValue[1] = fabs(error);
+            outputLayer._preNeuronValue[2] = 0;
+            outputLayer._preNeuronValue[3] = 0;
+            outputLayer._preNeuronValue[4] = 0;
 
-            BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
+            FeedForward(readTime, readSetTime, readDelay, outputLayer, core);
             // Serial.println("Obtained ADC Value after output->hidden BP");
             // printADCN5N6value(core);
-            referencing_BP(outputLayer, core);
-            core.setdHfromADCvalue(); // only take 1 , 3 , 4
+            referencing_FF(outputLayer, core);
+            core.setdHfromADCvalue(error); // only take 1 , 3 , 4
 
             // dZ1 = dH x input.postActiv x(1 - input.postActiv);
             for (int i = 0; i < 5; i++)
