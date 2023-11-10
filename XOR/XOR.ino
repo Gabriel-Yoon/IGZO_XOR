@@ -168,7 +168,8 @@ void loop()
     String D0_string, D1_string, D2_string, D3_string, D4_string, pulse_width_string, pre_enable_string, post_enable_string, zero_time_string, epoch_string;
     String set_num_string, update_num_string, read_period_string, read_delay_string, read_time_string, read_set_time_string;
     String Input_string;
-
+    int epoch;
+    int X1, X2;
     int index[VAR_NUM] = {
         0,
     }; // set every elements to zero
@@ -184,10 +185,20 @@ void loop()
             N5[i][Bit_length] = 0;
         }
     }
-    int epoch;
 
     if (Serial.available() > 0)
     {
+        // Control Panel
+        bool enable_GNDTEST = false;
+        bool enable_noise = false;
+
+        bool inputX1X2FourTypes = false;
+        bool inputX1X2Random = false;
+        bool inputX1X200 = false;
+        bool inputX1X201 = false;
+        bool inputX1X210 = false;
+        bool inputX1X211 = true;
+
         // SERIAL INPUT ******************************************************
         Input_string = Serial.readString();
         index[0] = Input_string.indexOf(",");
@@ -507,7 +518,6 @@ void loop()
         // 2. --------------------------------------- ADC ZERO VALUE EXTRACTION END
 
         // 3. GROUNDING TEST ------------------------------------------------------
-        bool enable_GNDTEST = false;
 
         if (enable_GNDTEST)
         {
@@ -537,7 +547,7 @@ void loop()
         // ----------------------------------------------------- GROUNDING TEST END
 
         // 4. ARRAY NOISE -----------------------------------------------------
-        bool enable_noise = false;
+
         if (enable_noise)
         {
             Serial.println("4. ARRAY NOISE ---------------------------------------------------------");
@@ -607,32 +617,61 @@ void loop()
             // Serial.println("// ---------------------------------------------------------");
             Serial.print("epoch = ");
             Serial.print(i + 1);
-            int X1 = rand() % 2;
-            int X2 = rand() % 2;
 
-            // Temporary code for different X1, X2 values
-            switch (i % 4)
+            X1 = rand() % 2;
+            X2 = rand() % 2;
+
+            // Input X1, X2 values
+            if (inputX1X2FourTypes)
             {
-            case 0:
+                switch (i % 4)
+                {
+                case 0:
+                    X1 = 0;
+                    X2 = 0;
+                    break;
+                case 1:
+                    X1 = 0;
+                    X2 = 1;
+                    break;
+                case 2:
+                    X1 = 1;
+                    X2 = 0;
+                    break;
+                case 3:
+                    X1 = 1;
+                    X2 = 1;
+                    break;
+                default:
+                    X1 = 0;
+                    X2 = 0;
+                    break;
+                }
+            }
+            if (inputX1X2Random)
+            {
+                X1 = rand() % 2;
+                X2 = rand() % 2;
+            }
+            if (inputX1X200)
+            {
                 X1 = 0;
                 X2 = 0;
-                break;
-            case 1:
+            }
+            if (inputX1X201)
+            {
                 X1 = 0;
                 X2 = 1;
-                break;
-            case 2:
+            }
+            if (inputX1X210)
+            {
                 X1 = 1;
                 X2 = 0;
-                break;
-            case 3:
+            }
+            if (inputX1X211)
+            {
                 X1 = 1;
                 X2 = 1;
-                break;
-            default:
-                X1 = 0;
-                X2 = 0;
-                break;
             }
 
             int solution = X1 ^ X2;
