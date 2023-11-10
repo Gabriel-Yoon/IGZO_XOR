@@ -1790,7 +1790,7 @@ void SGDsetRegisterPotentiation(int *P, int *Q, int pulseWidth, int preEnableTim
             }
             else
             {
-                N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0; // j = 2, 3, 4 only
+                N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
             }
 
             if (abs(P[j]) == 0)
@@ -1799,10 +1799,38 @@ void SGDsetRegisterPotentiation(int *P, int *Q, int pulseWidth, int preEnableTim
             }
             else
             {
-                N2[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0; // j = 2 only
+                N2[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
             }
         }
     }
+
+    // Print
+    Serial.print("N1 PRINT : ");
+    for (int j = 0; j < 5; j++)
+    {
+        Serial.print("j = ");
+        Serial.print(j);
+        for (int i = 0; i < Bit_length; i++)
+        {
+            Serial.print(N1[j][i]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+
+    Serial.print("N2 PRINT : ");
+    for (int j = 0; j < 5; j++)
+    {
+        Serial.print("j = ");
+        Serial.print(j);
+        for (int i = 0; i < Bit_length; i++)
+        {
+            Serial.print(N2[j][i]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+
     Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 }
 
@@ -1818,7 +1846,7 @@ void SGDsetRegisterDepression(int *P, int *Q, int pulseWidth, int preEnableTime,
             }
             else
             {
-                N3[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0; // j = 2, 3, 4 only
+                N3[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
             }
 
             if (abs(P[j]) == 0)
@@ -1827,10 +1855,38 @@ void SGDsetRegisterDepression(int *P, int *Q, int pulseWidth, int preEnableTime,
             }
             else
             {
-                N4[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0; // j = 2 only
+                N4[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
             }
         }
     }
+
+    // Print
+    Serial.print("N3 PRINT : ");
+    for (int j = 0; j < 5; j++)
+    {
+        Serial.print("j = ");
+        Serial.print(j);
+        for (int i = 0; i < Bit_length; i++)
+        {
+            Serial.print(N3[j][i]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+
+    Serial.print("N4 PRINT : ");
+    for (int j = 0; j < 5; j++)
+    {
+        Serial.print("j = ");
+        Serial.print(j);
+        for (int i = 0; i < Bit_length; i++)
+        {
+            Serial.print(N4[j][i]);
+            Serial.print(" ");
+        }
+        Serial.println(" ");
+    }
+
     Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 }
 
@@ -2122,5 +2178,13 @@ void doubleArraySync(double *arr, double *temp)
     for (int i = 0; i < 5; i++)
     {
         arr[i] = temp[i];
+    }
+}
+
+void print2Darray(int *P)
+{
+    Serial.print("Print2Darray");
+    for (int i = 0; i < 5; i++)
+    {
     }
 }
