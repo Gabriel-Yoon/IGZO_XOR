@@ -842,7 +842,7 @@ void loop()
                     {
                         continue;
                     }
-                    core.Q2[row_num] = fabs(core._dW2[row_num][col_num]) / learning_rate;
+                    core.Q2[row_num] = fabs(core._dW2[row_num][col_num]) * learning_rate;
                     core.P2[col_num] = 1;
                     if (core._dW2[row_num][col_num] > 0)
                     {
@@ -886,7 +886,7 @@ void loop()
                     {
                         continue;
                     }
-                    core.Q1[row_num] = fabs(core._dW1[row_num][col_num]) / learning_rate;
+                    core.Q1[row_num] = fabs(core._dW1[row_num][col_num]) * learning_rate;
                     core.P1[col_num] = 1;
                     if (core._dW1[row_num][col_num] > 0)
                     {
