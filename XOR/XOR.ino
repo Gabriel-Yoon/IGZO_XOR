@@ -1964,7 +1964,7 @@ void referencing_BP(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
         {
             if (arg_neurons._postNeuronValue[col_num] != 0 && arg_core._weight[row_num][col_num] != 0)
             {
-                arg_neurons._preNeuronValue[row_num] = (arg_core._ADCvalueBPTemp[row_num] - arg_core._ADCvalueBPZero[row_num]) / arg_core._weight[row_num][col_num];
+                arg_neurons._preNeuronValue[row_num] = (arg_core._ADCvalueBPTemp[row_num] - arg_core._ADCvalueBPZero[row_num]) / arg_neurons._postNeuronValue[col_num];
             }
         }
     }
