@@ -618,6 +618,10 @@ void loop()
             Serial.print("epoch = ");
             Serial.print(i + 1);
 
+            inputLayer.refresh();
+            hiddenLayer.refresh();
+            outputLayer.refresh();
+
             X1 = rand() % 2;
             X2 = rand() % 2;
 
@@ -814,7 +818,7 @@ void loop()
                 // P[i] = core._dW2[i] *
             }
 
-            // Weight Update Finally!!
+            // Weight Update
             // 1. Potentiation and Depression
             // Condition Setup
             pulseWidth = 1;

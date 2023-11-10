@@ -20,6 +20,8 @@ public:
     neuronLayer();
     ~neuronLayer();
 
+    void refresh();
+
     double sigmoidActivFunc(double &x);
     double tanhActivFunc(double &x);
 
