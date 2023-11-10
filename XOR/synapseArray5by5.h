@@ -95,7 +95,7 @@ public:
     void setTargetWeight();
     void setTargetBias();
 
-    void setdHfromADCvalue(double error);
+    void setdHfromADCvalue();
 
     void clearQ1();
     void clearP1();
