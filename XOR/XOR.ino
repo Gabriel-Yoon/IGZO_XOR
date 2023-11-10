@@ -618,6 +618,7 @@ void loop()
             Serial.print("epoch = ");
             Serial.print(i + 1);
 
+            core.refresh();
             inputLayer.refresh();
             hiddenLayer.refresh();
             outputLayer.refresh();
@@ -685,23 +686,6 @@ void loop()
             // Serial.print(X1);
             // Serial.print(" and ");
             // Serial.println(X2);
-
-            // ADC -> digital weight modifying/dereferencing
-            zeroTime = 1;
-            readDelay = 1;
-            readTime = 2000;
-            readSetTime = 1;
-
-            for (int rowNum = 0; rowNum < 5; rowNum++)
-            {
-                Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-                for (int colNum = 0; colNum < 5; colNum++)
-                {
-                    core._weight[rowNum][colNum] += (core._ADCvalueN5N6[colNum] - core._weightADC[rowNum][colNum]) / core._range;
-                    core._weightADC[rowNum][colNum] = core._ADCvalueN5N6[colNum];
-                }
-            }
-            core.setADCrefValue();
 
             // double testValue[5] = {1, 0, 1, 0, 1};
             // inputLayer.setPreNeuronValues(testValue);
@@ -856,7 +840,7 @@ void loop()
                 {
                     if (core._dW2[row_num][col_num] == 0)
                     {
-                        break;
+                        continue;
                     }
                     core.Q2[row_num] = abs(core._dW2[row_num][col_num]) / learning_rate;
                     core.P2[col_num] = 1;
@@ -900,7 +884,7 @@ void loop()
                 {
                     if (core._dW1[row_num][col_num] == 0)
                     {
-                        break;
+                        continue;
                     }
                     core.Q1[row_num] = abs(core._dW1[row_num][col_num]) / learning_rate;
                     core.P1[col_num] = 1;
@@ -918,6 +902,23 @@ void loop()
                     core.clearQ2();
                 }
             }
+
+            // ADC -> digital weight modifying/dereferencing
+            zeroTime = 1;
+            readDelay = 1;
+            readTime = 2000;
+            readSetTime = 1;
+
+            for (int rowNum = 0; rowNum < 5; rowNum++)
+            {
+                Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+                for (int colNum = 0; colNum < 5; colNum++)
+                {
+                    core._weight[rowNum][colNum] += (core._ADCvalueN5N6[colNum] - core._weightADC[rowNum][colNum]) / core._range;
+                    core._weightADC[rowNum][colNum] = core._ADCvalueN5N6[colNum];
+                }
+            }
+            core.setADCrefValue();
 
             // Serial.println("************************************************ XOR PROBLEM SOLVING END");
             // ************************************************ XOR PROBLEM SOLVING END

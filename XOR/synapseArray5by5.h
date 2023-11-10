@@ -74,6 +74,7 @@ public:
 
     void initialize();
     void setRange(int &range);
+    void refresh();
 
     void setWLPulseWidth(int &WL0, int &WL1, int &WL2, int &WL3, int &WL4);
     void setADCvalueTemp(int ADC_0, int ADC_1, int ADC_2, int ADC_3, int ADC_4);

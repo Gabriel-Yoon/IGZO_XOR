@@ -50,6 +50,20 @@ void synapseArray5by5::initialize()
     this->setADCrefValue();
 }
 //--------------------------------------------------------------
+void synapseArray5by5::refresh()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->_dH[i] = 0;
+        this->_dZ[i] = 0;
+        for (int j = 0; j < 5; j++)
+        {
+            this->_dW1[i][j] = 0;
+            this->_dW2[i][j] = 0;
+        }
+    }
+}
+//--------------------------------------------------------------
 void synapseArray5by5::setRange(int &range)
 {
     this->_range = range;
