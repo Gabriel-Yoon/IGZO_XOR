@@ -794,7 +794,7 @@ void loop()
             core.setADCvalueBPTemp();
 
             referencing_BP(outputLayer, core);
-            set_dH(outputLayer, core); // only take 1 , 3 , 4
+            set_dH(outputLayer, core, error); // only take 1 , 3 , 4
             printdH(core);
 
             // dZ1 = dH x input.postActiv x(1 - input.postActiv);
