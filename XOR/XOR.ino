@@ -107,7 +107,7 @@ int correctAnswerTimes;
 
 // Export
 std::vector<double> ErrorEpochRecorder;
-std::vector<double> RightWrongEpochRecorder;
+// std::vector<double> RightWrongEpochRecorder;
 
 // FORWARD DECLARATION ************************************
 
@@ -746,7 +746,7 @@ void loop()
             answer = (outputLayer._preNeuronValue[1] > 0.7) ? 1 : 0;
             if (answer == solution)
             {
-                RightWrongEpochRecorder.push_back(1);
+                // RightWrongEpochRecorder.push_back(1);
                 correctAnswerTimes++;
             }
             // if (answer == solution)
