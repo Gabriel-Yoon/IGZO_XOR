@@ -103,10 +103,11 @@ int Q1[5], Q2[5];
 int result[5];
 
 double error, loss;
-double learning_rate_partial;
+int correctAnswerTimes;
 
 // Export
 std::vector<double> ErrorEpochRecorder;
+std::vector<double> RightWrongEpochRecorder;
 
 // FORWARD DECLARATION ************************************
 
@@ -742,7 +743,12 @@ void loop()
             // Serial.println(outputLayer._preNeuronValue[1]);
             outputLayer.copyPreToPostNeuronValues();
 
-            answer = (outputLayer._preNeuronValue[1] > 0.5) ? 1 : 0;
+            answer = (outputLayer._preNeuronValue[1] > 0.7) ? 1 : 0;
+            if (answer == solution)
+            {
+                RightWrongEpochRecorder.push_back(1);
+                correctAnswerTimes++;
+            }
             // if (answer == solution)
             // {
             //     Serial.print(" Correct ");
@@ -949,6 +955,9 @@ void loop()
                 {
                     Serial.println(ErrorEpochRecorder[i] * 100);
                 }
+                Serial.print("Accuracy print : ");
+                Serial.print(correctAnswerTimes / epoch);
+                Serial.println("%");
             }
         }
         printDigitalWeight(core);
