@@ -101,7 +101,15 @@ void synapseArray5by5::setADCvalueBPZero()
 {
     for (int i = 0; i < 5; i++)
     {
-        this->_ADCvalueBPZero[i] = this->_ADCvalueTemp[i];
+        this->_ADCvalueBPZero[i] = this->_ADCvalueN5N6[i];
+    }
+}
+//--------------------------------------------------------------
+void synapseArray5by5::setADCvalueBPOne()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        this->_ADCvalueBPOne[i] = this->_ADCvalueN5N6[i];
     }
 }
 //--------------------------------------------------------------

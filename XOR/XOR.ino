@@ -778,6 +778,14 @@ void loop()
             core.setADCvalueBPZero();
 
             outputLayer._postNeuronValue[0] = 0;
+            outputLayer._postNeuronValue[1] = 1;
+            outputLayer._postNeuronValue[2] = 0;
+            outputLayer._postNeuronValue[3] = 0;
+            outputLayer._postNeuronValue[4] = 0;
+            BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
+            core.setADCvalueBPOne();
+
+            outputLayer._postNeuronValue[0] = 0;
             outputLayer._postNeuronValue[1] = error;
             outputLayer._postNeuronValue[2] = 0;
             outputLayer._postNeuronValue[3] = 0;
@@ -1957,6 +1965,7 @@ void referencing_BP(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
     // divided by arg_core.range
     // would become wx+b value
 
+    double ADCgrid[5] = {0};
     double tempArr[5] = {0};
     for (int row_num = 0; row_num < 5; row_num++)
     {
@@ -1964,6 +1973,8 @@ void referencing_BP(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
         {
             if (arg_neurons._postNeuronValue[col_num] != 0 && arg_core._weight[row_num][col_num] != 0)
             {
+                ADCgrid[row_num] = arg_core._ADCvalueBPOne[row_num] - arg_core._ADCvalueBPZero[row_num];
+
                 arg_neurons._preNeuronValue[row_num] = (arg_core._ADCvalueBPTemp[row_num] - arg_core._ADCvalueBPZero[row_num]) / arg_neurons._postNeuronValue[col_num];
             }
         }
@@ -1976,12 +1987,18 @@ void get_dW2(neuronLayer &arg_neurons, synapseArray5by5 &arg_core, double error)
     arg_core._dW2[3][1] = arg_neurons._preNeuronValue[3] * error;
     arg_core._dW2[4][1] = arg_neurons._preNeuronValue[4] * error;
 }
-void set_dH(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
+
+void set_dH(neuronLayer &arg_neurons, synapseArray5by5 &arg_core, double error)
 {
-    for (int row_num = 0; row_num < 5; row_num++)
-    {
-        arg_core._dH[row_num] = arg_neurons._preNeuronValue[row_num];
-    }
+    // for (int row_num = 0; row_num < 5; row_num++)
+    // {
+    //     arg_core._dH[row_num] = arg_neurons._preNeuronValue[row_num];
+    // }
+
+    // For real answer,
+    arg_core._dH[1] = arg_core._weight[1][1] * error;
+    arg_core._dH[3] = arg_core._weight[3][1] * error;
+    arg_core._dH[4] = arg_core._weight[4][1] * error;
 }
 
 void printer(char *name, double value)

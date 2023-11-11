@@ -42,6 +42,7 @@ public:
     int _ADCvalueN5N6[5];
     int _ADCbias[5];
     int _ADCvalueBPTemp[5];
+    int _ADCvalueBPOne[5];
     int _ADCvalueBPZero[5];
 
     // weight matrix: w values in y = wx +b
@@ -84,6 +85,7 @@ public:
     void setADCvalueN6();
     void setADCvalueN5N6();
     void setADCvalueBPTemp();
+    void setADCvalueBPOne();
     void setADCvalueBPZero();
 
     void setADCminValue(int rowNum);
