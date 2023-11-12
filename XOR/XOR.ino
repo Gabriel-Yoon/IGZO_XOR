@@ -1843,27 +1843,50 @@ void SGDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEna
 {
     for (int i = 0; i < Bit_length; i++)
     {
-        for (int j = 0; j < 5; j++)
+        for (int row_num = 0; row_num < 5; row_num++)
         {
-            if (Q[j] == 0)
+            if (Q[row_num] == 0)
             {
-                N1[j][i] = 0;
+                N1[row_num][i] = 0;
             }
             else
             {
-                N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
-                // Serial.print(N1[j][i]);
+                N1[row_num][i] = ((rand() % 100) + 1 <= Q[row_num] * 100) ? 1 : 0;
             }
-
-            if (P[j] == 0)
+            for (int col_num = 0; col_num < 5; col_num++)
             {
-                N2[j][i] = 0;
-            }
-            else
-            {
-                N2[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
+                if (P[col_num] == 0)
+                {
+                    N2[col_num][i] = 0;
+                }
+                else
+                {
+                    N2[col_num][i] = ((rand() % 100) + 1 <= P[col_num] * 100) ? 1 : 0;
+                }
             }
         }
+
+        // for (int j = 0; j < 5; j++)
+        // {
+        //     if (Q[j] == 0)
+        //     {
+        //         N1[j][i] = 0;
+        //     }
+        //     else
+        //     {
+        //         N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
+        //         // Serial.print(N1[j][i]);
+        //     }
+
+        //     if (P[j] == 0)
+        //     {
+        //         N2[j][i] = 0;
+        //     }
+        //     else
+        //     {
+        //         N2[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
+        //     }
+        // }
     }
 
     // // Print
@@ -1904,30 +1927,79 @@ void SGDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEna
     Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 }
 
-void SGDsetRegisterDepression(double *P, double *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
+void GDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
 {
     for (int i = 0; i < Bit_length; i++)
     {
         for (int j = 0; j < 5; j++)
         {
-            if (Q[j] == 0)
+            if (Q[j] == 0 || P[j] == 0)
             {
-                N3[j][i] = 0;
+                N1[j][i] = 0;
+                N2[j][i] = 0;
             }
             else
             {
-                N3[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
-            }
-
-            if (P[j] == 0)
-            {
-                N4[j][i] = 0;
-            }
-            else
-            {
-                N4[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
+                if (Q[j] * 100 < Bit_length)
+                {
+                    N1[j][i] = 1;
+                    N1[j][i] = 1;
+                }
+                // N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
+                // N2[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
             }
         }
+    }
+    Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
+}
+
+void SGDsetRegisterDepression(double *P, double *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
+{
+    for (int i = 0; i < Bit_length; i++)
+    {
+        for (int row_num = 0; row_num < 5; row_num++)
+        {
+            if (Q[row_num] == 0)
+            {
+                N3[row_num][i] = 0;
+            }
+            else
+            {
+                N3[row_num][i] = ((rand() % 100) + 1 <= Q[row_num] * 100) ? 1 : 0;
+            }
+            for (int col_num = 0; col_num < 5; col_num++)
+            {
+                if (P[col_num] == 0)
+                {
+                    N4[col_num][i] = 0;
+                }
+                else
+                {
+                    N4[col_num][i] = ((rand() % 100) + 1 <= P[col_num] * 100) ? 1 : 0;
+                }
+            }
+        }
+
+        // for (int j = 0; j < 5; j++)
+        // {
+        //     if (Q[j] == 0)
+        //     {
+        //         N3[j][i] = 0;
+        //     }
+        //     else
+        //     {
+        //         N3[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
+        //     }
+
+        //     if (P[j] == 0)
+        //     {
+        //         N4[j][i] = 0;
+        //     }
+        //     else
+        //     {
+        //         N4[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
+        //     }
+        // }
     }
 
     // Print
