@@ -808,7 +808,7 @@ void loop()
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
             core.setADCvalueBPTemp();
 
-            referencing_BP(outputLayer, core);
+            // referencing_BP(outputLayer, core);
             set_dH(outputLayer, core, error); // only take 1 , 3 , 4
             // printdH(core);
 
