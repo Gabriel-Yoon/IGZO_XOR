@@ -107,6 +107,7 @@ int correctAnswerTimes;
 
 // Export
 std::vector<double> ErrorEpochRecorder;
+std::vector<double> LossEpochRecorder;
 // std::vector<double> RightWrongEpochRecorder;
 
 // FORWARD DECLARATION ************************************
@@ -763,12 +764,17 @@ void loop()
 
             // loss, error, accuracy calculation
             loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
+            LossEpochRecorder.push_back(loss);
             // Serial.print("loss: ");
             // Serial.println(loss);
 
             error = outputLayer._preNeuronValue[1] - solution_double;
             Serial.print(" error: ");
-            Serial.println(error);
+            Serial.print(error);
+            Serial.print(" ");
+            Serial.print(" loss: ");
+            Serial.print(loss);
+            Serial.println(" ");
             ErrorEpochRecorder.push_back(error);
 
             get_dW2(hiddenLayer, core, error);
@@ -956,8 +962,14 @@ void loop()
                 {
                     Serial.println(ErrorEpochRecorder[i] * 100);
                 }
+                Serial.println("Loss print ");
+                for (int i = 0; i < epoch; i++)
+                {
+                    Serial.println(LossEpochRecorder[i] * 100);
+                }
+
                 Serial.print("Accuracy print : ");
-                Serial.print(correctAnswerTimes / epoch);
+                Serial.print(correctAnswerTimes / (double)epoch * 100);
                 Serial.println("%");
             }
         }
