@@ -817,21 +817,24 @@ void loop()
             // printdH(core);
 
             // dZ1 = dH x input.postActiv x(1 - input.postActiv);
-            for (int i = 0; i < 5; i++)
-            {
-                core._dZ[i] = core._dH[i] * hiddenLayer._preNeuronValue[i] * (1 - hiddenLayer._preNeuronValue[i]);
-            }
+
+            core._dZ[0] = core._dH[1] * hiddenLayer._preNeuronValue[1] * (1 - hiddenLayer._preNeuronValue[1]);
+            core._dZ[2] = core._dH[3] * hiddenLayer._preNeuronValue[3] * (1 - hiddenLayer._preNeuronValue[3]);
+            core._dZ[4] = core._dH[4] * hiddenLayer._preNeuronValue[4] * (1 - hiddenLayer._preNeuronValue[4]);
 
             for (int i = 0; i < 5; i++)
             {
                 for (int j = 0; j < 5; j++)
                 {
-                    core._dW1[i][j] = inputLayer._preNeuronValue[i] * core._dZ[j];
+                    if (core._weight[i][j] != 0)
+                    {
+                        core._dW1[i][j] = inputLayer._preNeuronValue[i] * core._dZ[j];
+                    }
                 }
             }
 
-            // printdW1(core);
-            // printdW2(core);
+            printdW1(core);
+            printdW2(core);
 
             // Get P[] Q[]
             for (int row_num = 0; row_num < 5; row_num++)

@@ -59,8 +59,8 @@ public:
     double _dH[5];
     double _dZ[5];
 
-    // referencin range
-    int _range;
+    // referencing range
+    double _range;
 
     // (SGD) Stochastic Gradient Descent
     int p[5];
