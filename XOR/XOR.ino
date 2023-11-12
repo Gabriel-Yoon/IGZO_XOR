@@ -825,7 +825,7 @@ void loop()
             }
 
             // printdW1(core);
-            printdW2(core);
+            // printdW2(core);
 
             // Get P[] Q[]
             for (int row_num = 0; row_num < 5; row_num++)
@@ -959,6 +959,17 @@ void loop()
             }
             core.setADCrefValue();
 
+            for (int i = 0; i < 5; i++)
+            {
+                for (int j = 0; j < Bit_length; j++)
+                {
+                    N1[i][Bit_length] = 0;
+                    N2[i][Bit_length] = 0;
+                    N3[i][Bit_length] = 0;
+                    N4[i][Bit_length] = 0;
+                    N5[i][Bit_length] = 0;
+                }
+            }
             // Serial.println("************************************************ XOR PROBLEM SOLVING END");
             // ************************************************ XOR PROBLEM SOLVING END
             // Print errors at the last moment
@@ -1832,16 +1843,17 @@ void SGDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEna
     {
         for (int j = 0; j < 5; j++)
         {
-            if (abs(Q[j]) == 0)
+            if (Q[j] == 0)
             {
                 N1[j][i] = 0;
             }
             else
             {
                 N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
+                Serial.print(N1[j][i]);
             }
 
-            if (abs(P[j]) == 0)
+            if (P[j] == 0)
             {
                 N2[j][i] = 0;
             }
@@ -1852,40 +1864,40 @@ void SGDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEna
         }
     }
 
-    // Print
-    Serial.print("N1 PRINT : ");
-    for (int j = 0; j < 5; j++)
-    {
-        Serial.print("Q[j] = ");
-        Serial.print(Q[j]);
-        Serial.print(" ");
-        Serial.print("j = ");
-        Serial.print(j);
-        Serial.print(" ");
-        for (int i = 0; i < Bit_length; i++)
-        {
-            Serial.print(N1[j][i]);
-            Serial.print(" ");
-        }
-        Serial.println(" ");
-    }
+    // // Print
+    // Serial.print("N1 PRINT : ");
+    // for (int j = 0; j < 5; j++)
+    // {
+    //     Serial.print("Q[j] = ");
+    //     Serial.print(Q[j]);
+    //     Serial.print(" ");
+    //     Serial.print("j = ");
+    //     Serial.print(j);
+    //     Serial.print(" ");
+    //     for (int i = 0; i < Bit_length; i++)
+    //     {
+    //         Serial.print(N1[j][i]);
+    //         Serial.print(" ");
+    //     }
+    //     Serial.println(" ");
+    // }
 
-    Serial.print("N2 PRINT : ");
-    for (int j = 0; j < 5; j++)
-    {
-        Serial.print("P[j] = ");
-        Serial.print(P[j]);
-        Serial.print(" ");
-        Serial.print("j = ");
-        Serial.print(j);
-        Serial.print(" ");
-        for (int i = 0; i < Bit_length; i++)
-        {
-            Serial.print(N2[j][i]);
-            Serial.print(" ");
-        }
-        Serial.println(" ");
-    }
+    // Serial.print("N2 PRINT : ");
+    // for (int j = 0; j < 5; j++)
+    // {
+    //     Serial.print("P[j] = ");
+    //     Serial.print(P[j]);
+    //     Serial.print(" ");
+    //     Serial.print("j = ");
+    //     Serial.print(j);
+    //     Serial.print(" ");
+    //     for (int i = 0; i < Bit_length; i++)
+    //     {
+    //         Serial.print(N2[j][i]);
+    //         Serial.print(" ");
+    //     }
+    //     Serial.println(" ");
+    // }
 
     Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 }
