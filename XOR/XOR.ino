@@ -1850,7 +1850,7 @@ void SGDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEna
             else
             {
                 N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
-                Serial.print(N1[j][i]);
+                // Serial.print(N1[j][i]);
             }
 
             if (P[j] == 0)
