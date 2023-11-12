@@ -820,7 +820,7 @@ void loop()
             {
                 for (int j = 0; j < 5; j++)
                 {
-                    core._dW1[i][j] = inputLayer._preNeuronValue[i] * core._dZ[i];
+                    core._dW1[i][j] = inputLayer._preNeuronValue[i] * core._dZ[j];
                 }
             }
 
