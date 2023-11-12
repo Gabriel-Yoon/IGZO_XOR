@@ -683,6 +683,10 @@ void loop()
                 X2 = 1;
             }
 
+            // Delete Here
+            X1 = 1;
+            X2 = 1;
+
             int solution = X1 ^ X2;
             double solution_double = (solution == 0) ? 0.0 : 1.0;
             int answer;
