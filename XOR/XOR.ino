@@ -746,12 +746,13 @@ void loop()
             answer = (outputLayer._preNeuronValue[1] > 0.7) ? 1 : 0;
             if (answer == solution)
             {
+                Serial.print(" Correct ");
                 // RightWrongEpochRecorder.push_back(1);
                 correctAnswerTimes++;
             }
             // if (answer == solution)
             // {
-            //     Serial.print(" Correct ");
+            //
             // }
             // else
             // {
@@ -801,7 +802,7 @@ void loop()
 
             referencing_BP(outputLayer, core);
             set_dH(outputLayer, core, error); // only take 1 , 3 , 4
-            printdH(core);
+            // printdH(core);
 
             // dZ1 = dH x input.postActiv x(1 - input.postActiv);
             for (int i = 0; i < 5; i++)
