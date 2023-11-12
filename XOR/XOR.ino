@@ -1908,7 +1908,7 @@ void SGDsetRegisterDepression(double *P, double *Q, int pulseWidth, int preEnabl
     {
         for (int j = 0; j < 5; j++)
         {
-            if (abs(Q[j]) == 0)
+            if (Q[j] == 0)
             {
                 N3[j][i] = 0;
             }
@@ -1917,7 +1917,7 @@ void SGDsetRegisterDepression(double *P, double *Q, int pulseWidth, int preEnabl
                 N3[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
             }
 
-            if (abs(P[j]) == 0)
+            if (P[j] == 0)
             {
                 N4[j][i] = 0;
             }
