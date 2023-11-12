@@ -825,7 +825,7 @@ void loop()
             }
 
             // printdW1(core);
-            // printdW2(core);
+            printdW2(core);
 
             // Get P[] Q[]
             for (int row_num = 0; row_num < 5; row_num++)
@@ -873,6 +873,8 @@ void loop()
                     {
                         continue;
                     }
+                    Serial.print("Q2 value would be: ");
+                    Serial.println(core._dW2[row_num][col_num]);
                     core.Q2[row_num] = fabs(core._dW2[row_num][col_num]) * learning_rate;
                     core.P2[col_num] = 1;
                     if (core._dW2[row_num][col_num] < 0)
