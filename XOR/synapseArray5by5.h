@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <math.h>
+#include <stdlib.h>
 // #include <iostream>
 // #include <sstream>
 // #include <fstream> //ofstream
@@ -98,6 +99,7 @@ public:
 
     void setWeightToInitialWeight();
     void setInitialWeight();
+    void setRandomInitialWeight();
     void setTargetWeight();
     void setTargetBias();
 

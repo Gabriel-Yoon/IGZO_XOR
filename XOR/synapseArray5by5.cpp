@@ -242,6 +242,58 @@ void synapseArray5by5::setInitialWeight()
     }
 }
 //--------------------------------------------------------------
+void synapseArray5by5::setRandomInitialWeight()
+{
+
+    /*
+    Synapse Weight Distribution
+    H : input - hidden layer
+    O : hidden - output layer
+
+        0   1   2   3   4
+    0---H---.---H---.---H
+        |   |   |   |   |
+    1---.---O---.---.---.
+        |   |   |   |   |
+    2---H---.---H---.---H
+        |   |   |   |   |
+    3---.---O---.---.---.
+        |   |   |   |   |
+    4---.---O---.---.---.
+
+    */
+
+    double input[6];
+    double hidden[3];
+
+    for (int i = 0; i < 6; i++)
+    {
+        input[i] = (rand() % 6) + (-5);
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        hidden[i] = (rand() % 17) + (-8);
+    }
+
+    // 100% accuracy
+    // Temporary array
+    double arr[5][5] = {
+        {input[0], 0, input[1], 0, input[2]},
+        {0, hidden[0], 0, 0, 0},
+        {input[3], 0, input[4], 0, input[5]},
+        {0, hidden[1], 0, 0, 0},
+        {0, hidden[2], 0, 0, 0}};
+
+    // Synchronize
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            this->_targetWeight[i][j] = arr[i][j];
+        }
+    }
+}
+//--------------------------------------------------------------
 void synapseArray5by5::setTargetWeight()
 {
 
