@@ -74,10 +74,10 @@ SAM3X-Arduino Pin Mapping
 
 // FIELDS *********************************************
 
-#define MAX 120          // Read pulse set까지의 시간을 위하여
-#define Bit_length 300   // update할 때의 timing을 맞추기 위해서 따로 정의
-#define VAR_NUM 10       // 총 Input variable 수를 정의할 것
-#define learning_rate 7. // 1st layer의 learning rate 정의
+#define MAX 120           // Read pulse set까지의 시간을 위하여
+#define Bit_length 300    // update할 때의 timing을 맞추기 위해서 따로 정의
+#define VAR_NUM 10        // 총 Input variable 수를 정의할 것
+#define learning_rate 15. // 1st layer의 learning rate 정의
 #define amplification_factor 8
 #define DECISION_BOUNDARY 0
 #define PRINTER(name) printer(#name, (name))
@@ -887,7 +887,7 @@ void loop()
                     }
                     else // core._dW2[row_num][col_num] > 0
                     {
-                        core.Q2[row_num] = (core._dW2[row_num][col_num]) * learning_rate * 2;
+                        core.Q2[row_num] = (core._dW2[row_num][col_num]) * learning_rate;
                         core.P2[col_num] = 1;
                         SGDsetRegisterPotentiation(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
@@ -1846,9 +1846,10 @@ void SGDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEna
         for (int row_num = 0; row_num < 5; row_num++)
         {
             if (Q[row_num] == 0)
-            {
-                N1[row_num][i] = 0;
-            }
+                ㅣㄷㅁ구ㅑ
+                {
+                    N1[row_num][i] = 0;
+                }
             else
             {
                 N1[row_num][i] = ((rand() % 100) + 1 <= Q[row_num] * 100) ? 1 : 0;
