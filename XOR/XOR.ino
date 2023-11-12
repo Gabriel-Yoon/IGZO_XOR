@@ -753,7 +753,7 @@ void loop()
             answer = (outputLayer._preNeuronValue[1] > 0.5) ? 1 : 0;
             if (answer == solution)
             {
-                Serial.print(" Correct ");
+                // Serial.print(" Correct ");
                 // RightWrongEpochRecorder.push_back(1);
                 correctAnswerTimes++;
             }
