@@ -750,7 +750,7 @@ void loop()
             // Serial.println(outputLayer._preNeuronValue[1]);
             outputLayer.copyPreToPostNeuronValues();
 
-            answer = (outputLayer._preNeuronValue[1] > 0.7) ? 1 : 0;
+            answer = (outputLayer._preNeuronValue[1] > 0.5) ? 1 : 0;
             if (answer == solution)
             {
                 Serial.print(" Correct ");
