@@ -954,16 +954,16 @@ void loop()
             readTime = 2000;
             readSetTime = 1;
 
-            for (int rowNum = 0; rowNum < 5; rowNum++)
-            {
-                Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
-                for (int colNum = 0; colNum < 5; colNum++)
-                {
-                    core._weight[rowNum][colNum] += (core._ADCvalueN5N6[colNum] - core._weightADC[rowNum][colNum]) / core._range;
-                    core._weightADC[rowNum][colNum] = core._ADCvalueN5N6[colNum];
-                }
-            }
-            core.setADCrefValue();
+            // for (int rowNum = 0; rowNum < 5; rowNum++)
+            // {
+            //     Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+            //     for (int colNum = 0; colNum < 5; colNum++)
+            //     {
+            //         core._weight[rowNum][colNum] += (core._ADCvalueN5N6[colNum] - core._weightADC[rowNum][colNum]) / core._range;
+            //         core._weightADC[rowNum][colNum] = core._ADCvalueN5N6[colNum];
+            //     }
+            // }
+            // core.setADCrefValue();
 
             for (int i = 0; i < 5; i++)
             {
