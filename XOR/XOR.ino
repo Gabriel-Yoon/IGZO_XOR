@@ -869,7 +869,7 @@ void loop()
             {
                 for (int col_num = 0; col_num < 5; col_num++)
                 {
-                    if (core._dW2[row_num][col_num] == 0)
+                    if (core._initialWeight[row_num][col_num] == 0 || core._dW2[row_num][col_num] == 0)
                     {
                         continue;
                     }
@@ -885,7 +885,7 @@ void loop()
                     }
                     else // core._dW2[row_num][col_num] > 0
                     {
-                        core.Q2[row_num] = (core._dW2[row_num][col_num]) * learning_rate;
+                        core.Q2[row_num] = (core._dW2[row_num][col_num]) * learning_rate * 2;
                         core.P2[col_num] = 0.75;
                         // SGDsetRegisterPotentiation(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         SGDsetRegisterDepression(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
@@ -918,7 +918,7 @@ void loop()
             {
                 for (int col_num = 0; col_num < 5; col_num++)
                 {
-                    if (core._dW1[row_num][col_num] == 0)
+                    if (core._initialWeight[row_num][col_num] == 0 || core._dW1[row_num][col_num] == 0)
                     {
                         continue;
                     }
@@ -932,7 +932,7 @@ void loop()
                     }
                     else
                     {
-                        core.Q1[row_num] = (core._dW1[row_num][col_num]) * learning_rate;
+                        core.Q1[row_num] = (core._dW1[row_num][col_num]) * learning_rate * 2;
                         core.P1[col_num] = 0.75;
                         // SGDsetRegisterPotentiation(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         SGDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
