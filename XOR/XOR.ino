@@ -1846,10 +1846,10 @@ void SGDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEna
         for (int row_num = 0; row_num < 5; row_num++)
         {
             if (Q[row_num] == 0)
-                ㅣㄷㅁ구ㅑ
-                {
-                    N1[row_num][i] = 0;
-                }
+
+            {
+                N1[row_num][i] = 0;
+            }
             else
             {
                 N1[row_num][i] = ((rand() % 100) + 1 <= Q[row_num] * 100) ? 1 : 0;
