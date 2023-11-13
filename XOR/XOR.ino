@@ -829,8 +829,8 @@ void loop()
                 }
             }
 
-            printdW1(core);
-            printdW2(core);
+            // printdW1(core);
+            // printdW2(core);
 
             // Get P[] Q[]
             for (int row_num = 0; row_num < 5; row_num++)
