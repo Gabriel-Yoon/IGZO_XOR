@@ -191,7 +191,7 @@ void loop()
     if (Serial.available() > 0)
     {
         // Control Panel
-        bool enable_GNDTEST = true;
+        bool enable_GNDTEST = false;
         bool enable_noise = false;
 
         bool inputX1X2FourTypes = true;
@@ -889,10 +889,10 @@ void loop()
                     {
                         core.Q2[row_num] = (-1) * (core._dW2[row_num][col_num]) * learning_rate;
                         core.P2[col_num] = 1;
-                        // if (core.Q2[row_num] * 100 < Bit_length)
-                        // {
-                        Potentiation_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
-                        // }
+                        if (core.Q2[row_num] * 100 < Bit_length)
+                        {
+                            Potentiation_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
+                        }
                         // SGDsetRegisterPotentiation(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // GDsetRegisterPotentiation(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
@@ -901,10 +901,10 @@ void loop()
                     {
                         core.Q2[row_num] = (core._dW2[row_num][col_num]) * learning_rate;
                         core.P2[col_num] = 1;
-                        // if (core.Q2[row_num] * 100 < Bit_length)
-                        // {
-                        Depression_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
-                        // }
+                        if (core.Q2[row_num] * 100 < Bit_length)
+                        {
+                            Depression_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
+                        }
                         // SGDsetRegisterPotentiation(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // GDsetRegisterDepression(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
@@ -946,10 +946,10 @@ void loop()
                     {
                         core.Q1[row_num] = (-1) * (core._dW1[row_num][col_num]) * learning_rate;
                         core.P1[col_num] = 1;
-                        // if (core.Q1[row_num] * 100 < Bit_length)
-                        // {
-                        Potentiation_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
-                        // }
+                        if (core.Q1[row_num] * 100 < Bit_length)
+                        {
+                            Potentiation_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
+                        }
                         // SGDsetRegisterPotentiation(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // GDsetRegisterPotentiation(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
@@ -958,10 +958,10 @@ void loop()
                     {
                         core.Q1[row_num] = (core._dW1[row_num][col_num]) * learning_rate;
                         core.P1[col_num] = 1;
-                        // if (core.Q1[row_num] * 100 < Bit_length)
-                        // {
-                        Depression_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
-                        // }
+                        if (core.Q1[row_num] * 100 < Bit_length)
+                        {
+                            Depression_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
+                        }
                         // SGDsetRegisterPotentiation(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // GDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
@@ -1700,49 +1700,49 @@ void Potentiation_6T(int pulse_width, int pre_enable_time, int post_enable_time,
     delayMicroseconds(zero_time);
 }
 
-void Potentiation_single_cell(int pulse_width, int pre_enable_time, int post_enable_time, int zero_time, int row_num, int col_num)
+void Potentiation_single_cell(int pulse_width, int pre_enable_time, int post_enable_time, int zero_time, int rowNum, int colNum)
 {
     int n1;
     int n2;
 
-    if (row_num == 0)
+    if (rowNum == 0)
     {
         n1 = (1 << 12);
     }
-    else if (row_num == 1)
+    else if (rowNum == 1)
     {
         n1 = (1 << 13);
     }
-    else if (row_num == 2)
+    else if (rowNum == 2)
     {
         n1 = (1 << 14);
     }
-    else if (row_num == 3)
+    else if (rowNum == 3)
     {
         n1 = (1 << 15);
     }
-    else if (row_num == 4)
+    else if (rowNum == 4)
     {
         n1 = (1 << 16);
     }
 
-    if (col_num == 0)
+    if (colNum == 0)
     {
         n2 = (1 << 7);
     }
-    else if (col_num == 1)
+    else if (colNum == 1)
     {
         n2 = (1 << 6);
     }
-    else if (col_num == 2)
+    else if (colNum == 2)
     {
         n2 = (1 << 5);
     }
-    else if (col_num == 3)
+    else if (colNum == 3)
     {
         n2 = (1 << 4);
     }
-    else if (col_num == 4)
+    else if (colNum == 4)
     {
         n2 = (1 << 3);
     }
@@ -1805,49 +1805,49 @@ void Depression_6T(int pulse_width, int pre_enable_time, int post_enable_time, i
     delayMicroseconds(zero_time);
 }
 
-void Depression_single_cell(int pulse_width, int pre_enable_time, int post_enable_time, int zero_time, int row_num, int col_num)
+void Depression_single_cell(int pulse_width, int pre_enable_time, int post_enable_time, int zero_time, int rowNum, int colNum)
 {
     int n3;
     int n4;
 
-    if (row_num == 0)
+    if (rowNum == 0)
     {
         n3 = (1 << 17);
     }
-    else if (row_num == 1)
+    else if (rowNum == 1)
     {
         n3 = (1 << 18);
     }
-    else if (row_num == 2)
+    else if (rowNum == 2)
     {
         n3 = (1 << 19);
     }
-    else if (row_num == 3)
+    else if (rowNum == 3)
     {
         n3 = (1 << 9);
     }
-    else if (row_num == 4)
+    else if (rowNum == 4)
     {
         n3 = (1 << 8);
     }
 
-    if (col_num == 0)
+    if (colNum == 0)
     {
         n4 = (1 << 2);
     }
-    else if (col_num == 1)
+    else if (colNum == 1)
     {
         n4 = (1 << 1);
     }
-    else if (col_num == 2)
+    else if (colNum == 2)
     {
         n4 = (1 << 23);
     }
-    else if (col_num == 3)
+    else if (colNum == 3)
     {
         n4 = (1 << 24);
     }
-    else if (col_num == 4)
+    else if (colNum == 4)
     {
         n4 = (1 << 25);
     }
