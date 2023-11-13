@@ -1684,6 +1684,69 @@ void Potentiation_6T(int pulse_width, int pre_enable_time, int post_enable_time,
     delayMicroseconds(zero_time);
 }
 
+void Potentiation_single_cell(int pulse_width, int pre_enable_time, int post_enable_time, int zero_time, int row_num, int col_num)
+{
+    int n1;
+    int n2;
+
+    if (row_num == 0)
+    {
+        n1 = (1 << 12);
+    }
+    else if (row_num == 1)
+    {
+        n1 = (1 << 13);
+    }
+    else if (row_num == 2)
+    {
+        n1 = (1 << 14);
+    }
+    else if (row_num == 3)
+    {
+        n1 = (1 << 15);
+    }
+    else if (row_num == 4)
+    {
+        n1 = (1 << 16);
+    }
+
+    if (col_num == 0)
+    {
+        n2 = (1 << 7);
+    }
+    else if (col_num == 1)
+    {
+        n2 = (1 << 6);
+    }
+    else if (col_num == 2)
+    {
+        n2 = (1 << 5);
+    }
+    else if (col_num == 3)
+    {
+        n2 = (1 << 4);
+    }
+    else if (col_num == 4)
+    {
+        n2 = (1 << 3);
+    }
+
+    PIOB->PIO_CODR = 1 << 26; // digitalWrite(FB,LOW)
+    PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
+
+    PIOC->PIO_CODR = n1; // N1 clear
+    PIOC->PIO_CODR = n2; //// N2 clear --> for 010 like pulse input
+    delayMicroseconds(zero_time);
+    PIOC->PIO_SODR = n1; // N1 set
+    delayMicroseconds(pre_enable_time);
+    PIOC->PIO_SODR = n2; // N2 set
+    delayMicroseconds(pulse_width);
+    PIOC->PIO_CODR = n2; // N2 clear
+    delayMicroseconds(post_enable_time);
+    PIOC->PIO_CODR = n1; // N1 clear
+    delayMicroseconds(zero_time);
+}
+
 void Depression_6T(int pulse_width, int pre_enable_time, int post_enable_time, int zero_time, int row_num)
 {
     int n3;
@@ -1708,6 +1771,69 @@ void Depression_6T(int pulse_width, int pre_enable_time, int post_enable_time, i
     else if (row_num == 4)
     {
         n3 = (1 << 8);
+    }
+
+    PIOB->PIO_CODR = 1 << 26; // digitalWrite(FB,LOW)
+    PIOB->PIO_CODR = 1 << 25; // digitalWrite(HL_CHOP,LOW)
+
+    PIOC->PIO_CODR = n3; // N3 clear
+    PIOC->PIO_CODR = n4; //// N4 clear
+    delayMicroseconds(zero_time);
+    PIOC->PIO_SODR = n3; // N3 set
+    delayMicroseconds(pre_enable_time);
+    PIOC->PIO_SODR = n4; // N4 set
+    delayMicroseconds(pulse_width);
+    PIOC->PIO_CODR = n4; // N4 clear
+    delayMicroseconds(post_enable_time);
+    PIOC->PIO_CODR = n3; // N3 clear
+    delayMicroseconds(zero_time);
+}
+
+void Depression_single_cell(int pulse_width, int pre_enable_time, int post_enable_time, int zero_time, int row_num, int col_num)
+{
+    int n3;
+    int n4;
+
+    if (row_num == 0)
+    {
+        n3 = (1 << 17);
+    }
+    else if (row_num == 1)
+    {
+        n3 = (1 << 18);
+    }
+    else if (row_num == 2)
+    {
+        n3 = (1 << 19);
+    }
+    else if (row_num == 3)
+    {
+        n3 = (1 << 9);
+    }
+    else if (row_num == 4)
+    {
+        n3 = (1 << 8);
+    }
+
+    if (col_num == 0)
+    {
+        n4 = (1 << 2);
+    }
+    else if (col_num == 1)
+    {
+        n4 = (1 << 1);
+    }
+    else if (col_num == 2)
+    {
+        n4 = (1 << 23);
+    }
+    else if (col_num == 3)
+    {
+        n4 = (1 << 24);
+    }
+    else if (col_num == 4)
+    {
+        n4 = (1 << 25);
     }
 
     PIOB->PIO_CODR = 1 << 26; // digitalWrite(FB,LOW)
