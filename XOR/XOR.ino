@@ -769,22 +769,18 @@ void loop()
             // Backpropagation -----------------------------------------------------
 
             // loss, error, accuracy calculation
+            loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
+            LossEpochRecorder.push_back(loss);
+            // Serial.print("loss: ");
+            // Serial.println(loss);
+
             error = outputLayer._preNeuronValue[1] - solution_double;
             Serial.print(" error: ");
             Serial.print(error);
             Serial.print(" ");
-
-            loss += BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
-            if (i % 4 == 3)
-            {
-                loss = 0.25 * loss;
-                LossEpochRecorder.push_back(loss);
-                Serial.print(" loss: ");
-                Serial.print(loss);
-                Serial.println(" ");
-                // Initialize loss
-                loss = 0;
-            }
+            Serial.print(" loss: ");
+            Serial.print(loss);
+            Serial.println(" ");
             ErrorEpochRecorder.push_back(error);
 
             get_dW2(hiddenLayer, core, error);
