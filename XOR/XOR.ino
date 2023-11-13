@@ -8,7 +8,6 @@
 // #include <Vector.h>
 #include "synapseArray5by5.h"
 #include "neuronLayer.h"
-#include "exportFunction.h"
 
 #undef max
 #undef min
@@ -109,7 +108,6 @@ int correctAnswerTimes;
 // Export
 std::vector<double> ErrorEpochRecorder;
 std::vector<double> LossEpochRecorder;
-exportFunction exporter;
 
 // std::vector<double> RightWrongEpochRecorder;
 
@@ -1048,8 +1046,6 @@ void loop()
                 Serial.print("Accuracy print : ");
                 Serial.print(correctAnswerTimes / (double)epoch * 100);
                 Serial.println("%");
-
-                exporter.exportLossToTXT(LossEpochRecorder);
             }
         }
         printDigitalWeight(core);
