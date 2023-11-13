@@ -822,16 +822,12 @@ void loop()
             core._dZ[2] = core._dH[3] * hiddenLayer._preNeuronValue[3] * (1 - hiddenLayer._preNeuronValue[3]);
             core._dZ[4] = core._dH[4] * hiddenLayer._preNeuronValue[4] * (1 - hiddenLayer._preNeuronValue[4]);
 
-            for (int i = 0; i < 5; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    if (core._weight[i][j] != 0)
-                    {
-                        core._dW1[i][j] = inputLayer._preNeuronValue[i] * core._dZ[j];
-                    }
-                }
-            }
+            core._dW1[0][0] = inputLayer._preNeuronValue[0] * core._dZ[0];
+            core._dW1[0][2] = inputLayer._preNeuronValue[0] * core._dZ[2];
+            core._dW1[0][4] = inputLayer._preNeuronValue[0] * core._dZ[4];
+            core._dW1[1][0] = inputLayer._preNeuronValue[1] * core._dZ[0];
+            core._dW1[1][2] = inputLayer._preNeuronValue[1] * core._dZ[2];
+            core._dW1[1][4] = inputLayer._preNeuronValue[1] * core._dZ[4];
 
             // printdW1(core);
             // printdW2(core);
@@ -878,7 +874,7 @@ void loop()
             {
                 for (int col_num = 0; col_num < 5; col_num++)
                 {
-                    if (core._initialWeight[row_num][col_num] == 0 || core._dW2[row_num][col_num] == 0)
+                    if (core._dW2[row_num][col_num] == 0)
                     {
                         continue;
                     }
@@ -943,7 +939,7 @@ void loop()
             {
                 for (int col_num = 0; col_num < 5; col_num++)
                 {
-                    if (core._initialWeight[row_num][col_num] == 0 || core._dW1[row_num][col_num] == 0)
+                    if (core._dW1[row_num][col_num] == 0)
                     {
                         continue;
                     }
