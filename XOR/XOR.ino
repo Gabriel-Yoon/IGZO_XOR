@@ -77,7 +77,7 @@ SAM3X-Arduino Pin Mapping
 #define MAX 120          // Read pulse set까지의 시간을 위하여
 #define Bit_length 300   // update할 때의 timing을 맞추기 위해서 따로 정의
 #define VAR_NUM 10       // 총 Input variable 수를 정의할 것
-#define learning_rate 7. // 1st layer의 learning rate 정의
+#define learning_rate 1. // 1st layer의 learning rate 정의
 #define amplification_factor 8
 #define DECISION_BOUNDARY 0
 #define PRINTER(name) printer(#name, (name))
@@ -956,10 +956,10 @@ void loop()
             }
 
             // ADC -> digital weight modifying/dereferencing
-            zeroTime = 1;
-            readDelay = 1;
-            readTime = 2000;
-            readSetTime = 1;
+            // zeroTime = 1;
+            // readDelay = 1;
+            // readTime = 2000;
+            // readSetTime = 1;
 
             // for (int rowNum = 0; rowNum < 5; rowNum++)
             // {
