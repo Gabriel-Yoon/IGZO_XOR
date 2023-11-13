@@ -289,9 +289,10 @@ void synapseArray5by5::setRandomInitialWeight()
     {
         for (int j = 0; j < 5; j++)
         {
-            this->_targetWeight[i][j] = arr[i][j];
+            this->_weight[i][j] = arr[i][j];
         }
     }
+    this->setADCrefValue();
 }
 //--------------------------------------------------------------
 void synapseArray5by5::setTargetWeight()

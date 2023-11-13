@@ -201,7 +201,7 @@ void loop()
         bool inputX1X210 = false;
         bool inputX1X211 = false;
 
-        bool randomWeight = false;
+        bool randomWeight = true;
 
         // SERIAL INPUT ******************************************************
         Input_string = Serial.readString();
@@ -615,6 +615,10 @@ void loop()
         // EPOCH ---------------------------------------------------------
         core.initialize();
         // core.setRange(100);
+        if (randomWeight)
+        {
+            core.setRandomInitialWeight();
+        }
 
         for (int i = 0; i < epoch; i++)
         {
