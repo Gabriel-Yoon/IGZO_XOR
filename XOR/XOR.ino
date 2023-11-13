@@ -964,7 +964,7 @@ void loop()
                         }
                         // SGDsetRegisterPotentiation(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        GDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // GDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                     core.clearP1();
                     core.clearQ1();
