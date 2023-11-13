@@ -187,7 +187,7 @@ void synapseArray5by5::setADCrefValue()
         {
             if (this->_weight[i][j] != 0)
             {
-                this->_ref[i][j] = this->_mid[i][j] - (int)round(this->_range * this->_weight[i][j]);
+                this->_ref[i][j] = this->_mid[i][j] - (int)round(this->_range * this->_initialWeight[i][j]);
             }
             else
             {
@@ -307,7 +307,7 @@ void synapseArray5by5::setRandomInitialWeight()
     {
         for (int j = 0; j < 5; j++)
         {
-            this->_weight[i][j] = arr[i][j];
+            this->_initialWeight[i][j] = arr[i][j];
         }
     }
     this->setADCrefValue();
