@@ -203,7 +203,7 @@ void synapseArray5by5::modifyCurrentWeight(int rowNum)
     {
         if (this->_weight[rowNum][i] != 0)
         {
-            this->_weight[rowNum][i] += (this->_ADCvalueN5N6[i] - this->_mid[rowNum][i]) / this->_range;
+            this->_weight[rowNum][i] = this->_initialWeight[rowNum][i] + (this->_ADCvalueN5N6[i] - this->_mid[rowNum][i]) / this->_range;
         }
     }
 }
