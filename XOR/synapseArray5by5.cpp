@@ -185,7 +185,14 @@ void synapseArray5by5::setADCrefValue()
     {
         for (int j = 0; j < 5; j++)
         {
-            this->_ref[i][j] = this->_mid[i][j] - (int)round(this->_range * this->_weight[i][j]);
+            if (this->_weight[i][j] != 0)
+            {
+                this->_ref[i][j] = this->_mid[i][j] - (int)round(this->_range * this->_weight[i][j]);
+            }
+            else
+            {
+                this->_ref[i][j] = 0;
+            }
         }
     }
 }
