@@ -1966,7 +1966,7 @@ void GDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEnab
                 if (Q[j] * 100 < Bit_length)
                 {
                     N1[j][i] = 1;
-                    N1[j][i] = 1;
+                    N2[j][i] = 1;
                 }
                 // N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
                 // N2[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
