@@ -769,7 +769,7 @@ void loop()
             // Backpropagation -----------------------------------------------------
 
             // loss, error, accuracy calculation
-            loss += MeanSquareError(outputLayer._preNeuronValue[1], solution_double);
+            loss = MeanSquareError(outputLayer._preNeuronValue[1], solution_double);
             LossEpochRecorder.push_back(loss);
             // Serial.print("loss: ");
             // Serial.println(loss);
@@ -2453,6 +2453,45 @@ void printADCrefValue(synapseArray5by5 &arg_core)
         }
         Serial.println(" ");
     }
+    Serial.println("-------------------");
+}
+
+void printADCBPOneValue(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC BP One print");
+    for (int i = 0; i < 5; i++)
+    {
+        Serial.print(arg_core._ADCvalueBPOne[i]);
+        Serial.print(" ");
+    }
+    Serial.println(" ");
+    Serial.println("-------------------");
+}
+
+void printADCBPZeroValue(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC BP One print");
+    for (int i = 0; i < 5; i++)
+    {
+        Serial.print(arg_core._ADCvalueBPZero[i]);
+        Serial.print(" ");
+    }
+    Serial.println(" ");
+    Serial.println("-------------------");
+}
+
+void printADCBPTempValue(synapseArray5by5 &arg_core)
+{
+    Serial.println("-------------------");
+    Serial.println("ADC BP One print");
+    for (int i = 0; i < 5; i++)
+    {
+        Serial.print(arg_core._ADCvalueBPTemp[i]);
+        Serial.print(" ");
+    }
+    Serial.println(" ");
     Serial.println("-------------------");
 }
 
