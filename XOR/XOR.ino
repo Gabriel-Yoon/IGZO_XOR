@@ -2106,28 +2106,7 @@ void GDsetRegisterPotentiation(double *P, double *Q, int pulseWidth, int preEnab
                 }
             }
         }
-
-        // for (int j = 0; j < 5; j++)
-        // {
-        //     if (Q[j] == 0 || P[j] == 0)
-        //     {
-        //         N1[j][i] = 0;
-        //         N2[j][i] = 0;
-        //     }
-        //     else
-        //     {
-        //         if (Q[j] * 100 < Bit_length)
-        //         {
-        //             N1[j][i] = 1;
-        //             N2[j][i] = 1;
-        //             Potentiation_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, );
-        //         }
-        //         // N1[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
-        //         // N2[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
-        //     }
-        // }
     }
-    // Potentiation(N1[0], N1[1], N1[2], N1[3], N1[4], N2[0], N2[1], N2[2], N2[3], N2[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 }
 
 void GDsetRegisterDepression(double *P, double *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
@@ -2147,27 +2126,7 @@ void GDsetRegisterDepression(double *P, double *Q, int pulseWidth, int preEnable
                 }
             }
         }
-
-        // for (int j = 0; j < 5; j++)
-        // {
-        //     if (Q[j] == 0 || P[j] == 0)
-        //     {
-        //         N3[j][i] = 0;
-        //         N4[j][i] = 0;
-        //     }
-        //     else
-        //     {
-        //         if (Q[j] * 100 < Bit_length)
-        //         {
-        //             N3[j][i] = 1;
-        //             N4[j][i] = 1;
-        //         }
-        //         // N3[j][i] = ((rand() % 100) + 1 <= Q[j] * 100) ? 1 : 0;
-        //         // N4[j][i] = ((rand() % 100) + 1 <= P[j] * 100) ? 1 : 0;
-        //     }
-        // }
     }
-    // Depression(N3[0], N3[1], N3[2], N3[3], N3[4], N4[0], N4[1], N4[2], N4[3], N4[4], pulseWidth, preEnableTime, postEnableTime, zeroTime);
 }
 
 void SGDsetRegisterDepression(double *P, double *Q, int pulseWidth, int preEnableTime, int postEnableTime, int zeroTime)
