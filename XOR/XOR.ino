@@ -8,6 +8,7 @@
 // #include <Vector.h>
 #include "synapseArray5by5.h"
 #include "neuronLayer.h"
+#include "exportFunction.h"
 
 #undef max
 #undef min
@@ -108,6 +109,8 @@ int correctAnswerTimes;
 // Export
 std::vector<double> ErrorEpochRecorder;
 std::vector<double> LossEpochRecorder;
+exportFunction exporter;
+
 // std::vector<double> RightWrongEpochRecorder;
 
 // FORWARD DECLARATION ************************************
@@ -191,7 +194,7 @@ void loop()
     if (Serial.available() > 0)
     {
         // Control Panel
-        bool enable_GNDTEST = true;
+        bool enable_GNDTEST = false;
         bool enable_noise = false;
 
         bool inputX1X2FourTypes = true;
@@ -619,6 +622,8 @@ void loop()
         {
             core.setRandomInitialWeight();
         }
+        Serial.println("Initial Weight");
+        printDigitalWeight(core);
 
         for (int i = 0; i < epoch; i++)
         {
@@ -769,18 +774,21 @@ void loop()
             // Backpropagation -----------------------------------------------------
 
             // loss, error, accuracy calculation
-            loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
-            LossEpochRecorder.push_back(loss);
-            // Serial.print("loss: ");
-            // Serial.println(loss);
-
             error = outputLayer._preNeuronValue[1] - solution_double;
             Serial.print(" error: ");
             Serial.print(error);
             Serial.print(" ");
-            Serial.print(" loss: ");
-            Serial.print(loss);
-            Serial.println(" ");
+
+            loss += BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
+            if (i % 4 == 3)
+            {
+                LossEpochRecorder.push_back(loss / 4);
+                Serial.print(" loss: ");
+                Serial.print(loss);
+                Serial.println(" ");
+                // Initialize loss
+                loss = 0;
+            }
             ErrorEpochRecorder.push_back(error);
 
             get_dW2(hiddenLayer, core, error);
@@ -822,16 +830,12 @@ void loop()
             core._dZ[2] = core._dH[3] * hiddenLayer._preNeuronValue[3] * (1 - hiddenLayer._preNeuronValue[3]);
             core._dZ[4] = core._dH[4] * hiddenLayer._preNeuronValue[4] * (1 - hiddenLayer._preNeuronValue[4]);
 
-            for (int i = 0; i < 5; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    if (core._weight[i][j] != 0)
-                    {
-                        core._dW1[i][j] = inputLayer._preNeuronValue[i] * core._dZ[j];
-                    }
-                }
-            }
+            core._dW1[0][0] = inputLayer._preNeuronValue[0] * core._dZ[0];
+            core._dW1[0][2] = inputLayer._preNeuronValue[0] * core._dZ[2];
+            core._dW1[0][4] = inputLayer._preNeuronValue[0] * core._dZ[4];
+            core._dW1[1][0] = inputLayer._preNeuronValue[1] * core._dZ[0];
+            core._dW1[1][2] = inputLayer._preNeuronValue[1] * core._dZ[2];
+            core._dW1[1][4] = inputLayer._preNeuronValue[1] * core._dZ[4];
 
             // printdW1(core);
             // printdW2(core);
@@ -878,7 +882,7 @@ void loop()
             {
                 for (int col_num = 0; col_num < 5; col_num++)
                 {
-                    if (core._initialWeight[row_num][col_num] == 0 || core._dW2[row_num][col_num] == 0)
+                    if (core._dW2[row_num][col_num] == 0)
                     {
                         continue;
                     }
@@ -943,7 +947,7 @@ void loop()
             {
                 for (int col_num = 0; col_num < 5; col_num++)
                 {
-                    if (core._initialWeight[row_num][col_num] == 0 || core._dW1[row_num][col_num] == 0)
+                    if (core._dW1[row_num][col_num] == 0)
                     {
                         continue;
                     }
@@ -1044,6 +1048,8 @@ void loop()
                 Serial.print("Accuracy print : ");
                 Serial.print(correctAnswerTimes / (double)epoch * 100);
                 Serial.println("%");
+
+                exporter.exportLossToTXT(LossEpochRecorder);
             }
         }
         printDigitalWeight(core);
