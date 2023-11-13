@@ -769,7 +769,7 @@ void loop()
             // Backpropagation -----------------------------------------------------
 
             // loss, error, accuracy calculation
-            loss = BinaryCrossentropy(outputLayer._preNeuronValue[1], solution_double);
+            loss += MeanSquareError(outputLayer._preNeuronValue[1], solution_double);
             LossEpochRecorder.push_back(loss);
             // Serial.print("loss: ");
             // Serial.println(loss);
@@ -2259,6 +2259,11 @@ void SGDsetRegisterDepression(double *P, double *Q, int pulseWidth, int preEnabl
 double BinaryCrossentropy(double &y_hat, double &y)
 {
     return -y * log(y_hat) + (1 - y) * log(1 - y_hat);
+}
+
+double MeanSquareError(double &y_hat, double &y)
+{
+    return (y_hat - y) * (y_hat - y);
 }
 
 void referencing_FF(neuronLayer &arg_neurons, synapseArray5by5 &arg_core)
