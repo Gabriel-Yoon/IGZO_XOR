@@ -889,17 +889,31 @@ void loop()
                     {
                         core.Q2[row_num] = (-1) * (core._dW2[row_num][col_num]) * learning_rate;
                         core.P2[col_num] = 1;
+                        for (int i = 0; i < Bit_length; i++)
+                        {
+                            if (i < core.Q2[row_num] * 100)
+                            {
+                                Potentiation_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
+                            }
+                        }
                         // SGDsetRegisterPotentiation(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        GDsetRegisterPotentiation(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // GDsetRegisterPotentiation(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                     else // core._dW2[row_num][col_num] > 0
                     {
                         core.Q2[row_num] = (core._dW2[row_num][col_num]) * learning_rate;
                         core.P2[col_num] = 1;
+                        for (int i = 0; i < Bit_length; i++)
+                        {
+                            if (i < core.Q2[row_num] * 100)
+                            {
+                                Depression_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
+                            }
+                        }
                         // SGDsetRegisterPotentiation(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        GDsetRegisterDepression(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // GDsetRegisterDepression(core.P2, core.Q2, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                     core.clearP2();
                     core.clearQ2();
@@ -938,17 +952,31 @@ void loop()
                     {
                         core.Q1[row_num] = (-1) * (core._dW1[row_num][col_num]) * learning_rate;
                         core.P1[col_num] = 1;
+                        for (int i = 0; i < Bit_length; i++)
+                        {
+                            if (i < core.Q1[row_num] * 100)
+                            {
+                                Potentiation_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
+                            }
+                        }
                         // SGDsetRegisterPotentiation(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        GDsetRegisterPotentiation(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // GDsetRegisterPotentiation(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                     else
                     {
                         core.Q1[row_num] = (core._dW1[row_num][col_num]) * learning_rate;
                         core.P1[col_num] = 1;
+                        for (int i = 0; i < Bit_length; i++)
+                        {
+                            if (i < core.Q1[row_num] * 100)
+                            {
+                                Depression_single_cell(pulseWidth, preEnableTime, postEnableTime, zeroTime, row_num, col_num);
+                            }
+                        }
                         // SGDsetRegisterPotentiation(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                         // SGDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
-                        GDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
+                        // GDsetRegisterDepression(core.P1, core.Q1, pulseWidth, preEnableTime, postEnableTime, zeroTime);
                     }
                     core.clearP1();
                     core.clearQ1();
