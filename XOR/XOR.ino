@@ -191,7 +191,7 @@ void loop()
     if (Serial.available() > 0)
     {
         // Control Panel
-        bool enable_GNDTEST = false;
+        bool enable_GNDTEST = true;
         bool enable_noise = false;
 
         bool inputX1X2FourTypes = true;
@@ -201,7 +201,7 @@ void loop()
         bool inputX1X210 = false;
         bool inputX1X211 = false;
 
-        bool randomWeight = true;
+        bool randomWeight = false;
 
         // SERIAL INPUT ******************************************************
         Input_string = Serial.readString();
