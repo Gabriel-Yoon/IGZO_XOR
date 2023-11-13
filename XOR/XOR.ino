@@ -1439,25 +1439,36 @@ void GroundAllCells(int readTime, int readSetTime, int readDelay, int rowNum, sy
 {
     int n1;
     int n2;
+    int n3;
+
     n1 = (1 << 12); // row number 0
     n1 = (1 << 13); // row number 1
     n1 = (1 << 14); // row number 2
     n1 = (1 << 15); // row number 3
     n1 = (1 << 16); // row number 4
 
-    n2 = (1 << 7); // column number 0
-    n2 = (1 << 6); // column number 1
-    n2 = (1 << 5); // column number 2
-    n2 = (1 << 4); // column number 3
-    n2 = (1 << 3); // column number 4
+    // n2 = (1 << 7); // column number 0
+    // n2 = (1 << 6); // column number 1
+    // n2 = (1 << 5); // column number 2
+    // n2 = (1 << 4); // column number 3
+    // n2 = (1 << 3); // column number 4
+
+    n3 = (1 << 17);
+    n3 = (1 << 18);
+    n3 = (1 << 19);
+    n3 = (1 << 9);
+    n3 = (1 << 8);
 
     state_switch(1);
     PIOA->PIO_CODR = 1 << 20; // VH VDDHAFL1
     PIOC->PIO_SODR = n1;      // N1 ON
-    PIOC->PIO_SODR = n2;      // N2 ON
-    delay(10);                // Ground Capacitor for 10 milisec
-    PIOC->PIO_CODR = 1 << 2;  // N1 clear
-    PIOC->PIO_CODR = 1 << 7;  // N2 clear
+    // PIOC->PIO_SODR = n2;   // N2 ON
+    PIOC->PIO_SODR = n3; // N3 ON
+    delay(10);           // Ground Capacitor for 10 milisec
+    // PIOC->PIO_CODR = 1 << 2; // N1 clear
+    // PIOC->PIO_CODR = 1 << 7; // N2 clear
+    PIOC->PIO_CODR = n1; // N1 clear
+    PIOC->PIO_CODR = n3; // N3 clear
     Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, arg_core);
     delay(50);
 }
