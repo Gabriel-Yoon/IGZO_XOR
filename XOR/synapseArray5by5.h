@@ -95,6 +95,7 @@ public:
     void setADCgndValue(int rowNum);
     void setADCnoiseValue(int rowNum);
     void setADCrefValue();
+    void modifyCurrentWeight(int rowNum);
     void modifyADCrefValue();
 
     void setWeightToInitialWeight();

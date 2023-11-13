@@ -197,6 +197,17 @@ void synapseArray5by5::setADCrefValue()
     }
 }
 //--------------------------------------------------------------
+void synapseArray5by5::modifyCurrentWeight(int rowNum)
+{
+    for (int i = 0; i < 5; i++)
+    {
+        if (this->_weight != 0)
+        {
+            this->_weight[rowNum][i] += (this->_ADCvalueN5N6[i] - this->_mid[rowNum][i]) / this->_range;
+        }
+    }
+}
+//--------------------------------------------------------------
 void synapseArray5by5::setWeightToInitialWeight()
 {
     // Synchronize

@@ -955,6 +955,19 @@ void loop()
                 }
             }
 
+            // Condition Setup
+            pulseWidth = 0;
+            preEnableTime = 1;
+            postEnableTime = 1;
+            setNum = 10;
+            readPeriod = 1000;
+            zeroTime = 1;
+            readDelay = 1;
+            readTime = 2000;
+            readSetTime = 1;
+            updateNum = 3000;
+            updateCurrentWeight(readTime, readSetTime, readDelay, core);
+
             // ADC -> digital weight modifying/dereferencing
             // zeroTime = 1;
             // readDelay = 1;
@@ -2404,5 +2417,18 @@ void print2Darray(int *P)
     Serial.print("Print2Darray");
     for (int i = 0; i < 5; i++)
     {
+    }
+}
+
+void updateCurrentWeight(int readTime, int readSetTime, int readDelay, synapseArray5by5 &arg_core)
+{
+    for (int rowNum = 0; rowNum < 5; rowNum++)
+    {
+        Read_operation_forward_6T(readTime, readSetTime, readDelay, rowNum, core);
+        arg_core.modifyCurrentWeight(rowNum);
+        // for (int colNum = 0; colNum < 5; colNum++)
+        // {
+        //     arg_core._weightADC[rowNum][colNum] = arg_core._ADCvalueN5N6[colNum];
+        // }
     }
 }
