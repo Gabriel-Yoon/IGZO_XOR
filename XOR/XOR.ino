@@ -795,6 +795,7 @@ void loop()
             outputLayer._postNeuronValue[4] = 0;
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
             core.setADCvalueBPZero();
+            printADCBPZeroValue(core);
 
             outputLayer._postNeuronValue[0] = 0;
             outputLayer._postNeuronValue[1] = 1;
@@ -803,6 +804,7 @@ void loop()
             outputLayer._postNeuronValue[4] = 0;
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
             core.setADCvalueBPOne();
+            printADCBPOneValue(core);
 
             outputLayer._postNeuronValue[0] = 0;
             outputLayer._postNeuronValue[1] = error;
@@ -811,6 +813,7 @@ void loop()
             outputLayer._postNeuronValue[4] = 0;
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
             core.setADCvalueBPTemp();
+            printADCBPTempValue(core);
 
             // referencing_BP(outputLayer, core);
             set_dH(outputLayer, core, error); // only take 1 , 3 , 4
