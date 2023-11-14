@@ -807,7 +807,7 @@ void loop()
             printADCBPOneValue(core);
 
             outputLayer._postNeuronValue[0] = 0;
-            outputLayer._postNeuronValue[1] = error;
+            outputLayer._postNeuronValue[1] = 0.5;
             outputLayer._postNeuronValue[2] = 0;
             outputLayer._postNeuronValue[3] = 0;
             outputLayer._postNeuronValue[4] = 0;
@@ -2475,7 +2475,7 @@ void printADCBPOneValue(synapseArray5by5 &arg_core)
 void printADCBPZeroValue(synapseArray5by5 &arg_core)
 {
     Serial.println("-------------------");
-    Serial.println("ADC BP One print");
+    Serial.println("ADC BP Zero print");
     for (int i = 0; i < 5; i++)
     {
         Serial.print(arg_core._ADCvalueBPZero[i]);
@@ -2488,7 +2488,7 @@ void printADCBPZeroValue(synapseArray5by5 &arg_core)
 void printADCBPTempValue(synapseArray5by5 &arg_core)
 {
     Serial.println("-------------------");
-    Serial.println("ADC BP One print");
+    Serial.println("ADC BP Temp print");
     for (int i = 0; i < 5; i++)
     {
         Serial.print(arg_core._ADCvalueBPTemp[i]);
