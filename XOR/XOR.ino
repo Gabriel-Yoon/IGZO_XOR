@@ -787,6 +787,8 @@ void loop()
             // BP: output->hidden to get dH (=W2 x error)
 
             // BackPropagation setup
+            double BPinput = 0.0;
+            double BPinput_multiplier = 1.0;
 
             outputLayer._postNeuronValue[0] = 0;
             outputLayer._postNeuronValue[1] = 0; // this should be changed to 'error'
@@ -795,7 +797,7 @@ void loop()
             outputLayer._postNeuronValue[4] = 0;
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
             core.setADCvalueBPZero();
-            printADCBPZeroValue(core);
+            // printADCBPZeroValue(core);
 
             outputLayer._postNeuronValue[0] = 0;
             outputLayer._postNeuronValue[1] = 1;
@@ -804,19 +806,33 @@ void loop()
             outputLayer._postNeuronValue[4] = 0;
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
             core.setADCvalueBPOne();
-            printADCBPOneValue(core);
+            // printADCBPOneValue(core);
+
+            if (error < 0)
+            {
+                BPinput = (-1) * error;
+            }
+            else
+            {
+                BPinput = error;
+            }
+            if (BPinput < 0.1)
+            {
+                BPinput_multiplier = 10;
+                BPinput = BPinput_multiplier * BPinput;
+            }
 
             outputLayer._postNeuronValue[0] = 0;
-            outputLayer._postNeuronValue[1] = 0.5;
+            outputLayer._postNeuronValue[1] = BPinput;
             outputLayer._postNeuronValue[2] = 0;
             outputLayer._postNeuronValue[3] = 0;
             outputLayer._postNeuronValue[4] = 0;
             BackPropagation(readTime, readSetTime, readDelay, outputLayer, core);
             core.setADCvalueBPTemp();
-            printADCBPTempValue(core);
+            // printADCBPTempValue(core);
 
             // referencing_BP(outputLayer, core);
-            set_dH(outputLayer, core, error); // only take 1 , 3 , 4
+            set_dH(core, error, BPinput, BPinput_multiplier); // only take 1 , 3 , 4
             // printdH(core);
 
             // dZ1 = dH x input.postActiv x(1 - input.postActiv);
@@ -2328,17 +2344,33 @@ void get_dW2(neuronLayer &arg_neurons, synapseArray5by5 &arg_core, double error)
     arg_core._dW2[4][1] = arg_neurons._preNeuronValue[4] * error;
 }
 
-void set_dH(neuronLayer &arg_neurons, synapseArray5by5 &arg_core, double error)
+void set_dH(synapseArray5by5 &arg_core, double error, double BP_input, double BP_multiplier)
 {
+    for (int row_num = 0; row_num < 5; row_num++)
+    {
+        if (arg_core._ADCvalueBPTemp[row_num] < 0)
+        {
+            arg_core._ADCvalueBPTemp[row_num] = (-1) * arg_core._ADCvalueBPTemp[row_num];
+        }
+        if (arg_core._ADCvalueBPOne[row_num] < 0)
+        {
+            arg_core._ADCvalueBPOne[row_num] = (-1) * arg_core._ADCvalueBPOne[row_num];
+        }
+    }
+    arg_core._dH[1] = (arg_core._ADCvalueBPTemp[1] / arg_core._ADCvalueBPOne[1]) * arg_core._weight[1][1] / BP_multiplier;
+    arg_core._dH[3] = (arg_core._ADCvalueBPTemp[3] / arg_core._ADCvalueBPOne[3]) * arg_core._weight[3][1] / BP_multiplier;
+    arg_core._dH[4] = (arg_core._ADCvalueBPTemp[4] / arg_core._ADCvalueBPOne[4]) * arg_core._weight[4][1] / BP_multiplier;
+
     // for (int row_num = 0; row_num < 5; row_num++)
     // {
     //     arg_core._dH[row_num] = arg_neurons._preNeuronValue[row_num];
     // }
 
     // For real answer,
-    arg_core._dH[1] = arg_core._weight[1][1] * error;
-    arg_core._dH[3] = arg_core._weight[3][1] * error;
-    arg_core._dH[4] = arg_core._weight[4][1] * error;
+
+    // arg_core._dH[1] = arg_core._weight[1][1] * error;
+    // arg_core._dH[3] = arg_core._weight[3][1] * error;
+    // arg_core._dH[4] = arg_core._weight[4][1] * error;
 }
 
 void printer(char *name, double value)
