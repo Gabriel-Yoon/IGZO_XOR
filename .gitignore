@@ -1,3 +1,5 @@
 .vscode
 .DS_Store
 index.ino
+base.ino
+XOR_learning_value.ino

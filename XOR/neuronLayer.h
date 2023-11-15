@@ -20,6 +20,8 @@ public:
     neuronLayer();
     ~neuronLayer();
 
+    void refresh();
+
     double sigmoidActivFunc(double &x);
     double tanhActivFunc(double &x);
 
@@ -27,6 +29,12 @@ public:
     void setPostNeuronValues(double *p);
     void setPreNeuronActivationValues();
     void setPostNeuronActivationValues();
+
+    void sigmoidActivation();
+    void sigmoidActivationPreNeurons();
+    void tanhActivation();
+    void syncPostToPreNeuronValues(neuronLayer &arg_neurons);
+    void copyPreToPostNeuronValues();
 };
 //**************************************************************************************************************//
 #endif
